@@ -29,10 +29,11 @@ pnpm art:qa         # grid, palette and provenance of every image
 pnpm depcruise      # the dependency wall: game code never imports gateway or mayor/policy
 pnpm sim            # stream 30 s of mock-fleet events as JSON lines (--seconds, --seed)
 pnpm sim:year       # 365-day economy run (stub until Phase 6)
-pnpm placeholders   # regenerate the placeholder tileset and map
+pnpm art:build      # compile art/pixel into the tilesets, map, sprites, portraits, font
+pnpm art:preview map # render a sheet at 4× (terrain, objects, buildings, characters, portraits, ui, map)
 ```
 
-Layout: `apps/town-client` (Phaser 4 + React 19 + Vite), `apps/town-server` (Fastify), `packages/schema` (Zod + generated JSON Schema), `adapter-sdk` (signed events in ten lines), `sim` (the mock fleet and its fixtures), `game-data` (tables), `game-core` (pure rules), `save-migrations`. `PLAN.md` maps the twelve agents to the firm and lists the open questions.
+Layout: `apps/town-client` (Phaser 4 + React 19 + Vite), `apps/town-server` (Fastify), `packages/schema` (Zod + generated JSON Schema), `adapter-sdk` (signed events in ten lines), `sim` (the mock fleet and its fixtures), `game-data` (tables), `game-core` (pure rules), `save-migrations`, and `art/pixel` (every picture as code). `PLAN.md` maps the twelve agents to the firm and lists the open questions.
 
 Later phases expand this file: adding an agent in one file, connecting a remote or local agent, the art pipeline, the kill switch, creating, hiring and awakening a resident, the farm loop, the bridge settings and Sim Season.
 

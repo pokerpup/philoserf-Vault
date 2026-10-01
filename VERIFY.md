@@ -36,6 +36,17 @@ Criteria from `docs/spec/phases/phase-0.md`. Walked by the session on 2026-10-01
   8. `scripts/banned-words.sh packages/game-data art apps/town-client/src packages/sim/src` → no output, exit 0.
 - Pending for later phases (listed so the stub is honest): `art:qa` orphan-pixel, silhouette, light-direction, crop-stage and portrait-diff rules (Phase 4); `sim:year` real run (Phase 6); `sim:vault` real run (Phase 10).
 
+### Graphics (added after the approval, same session)
+
+- Covered by: `art/pixel/test/art.test.ts` (palette, map layers and spawns, water frames, building kit, sprite padding and mirroring, portrait deltas, font), `e2e/town.spec.ts` (12 sprites on the map, pixelated portraits), `pnpm art:qa`.
+- Steps:
+  1. `pnpm art:build` → `art:build — 493 tiles, 12 people, 28 files …`; `pnpm art:qa` → `sheets clean`.
+  2. `pnpm art:preview map 1` and open `screens/preview/map.png`: Firm Hill with the brick Trading Firm, cobbled forecourt and five fenced lots; the square with Town Hall, the Counting House, the store and the clinic around the well; the six charter halls around the Vault arch; the cottage, Ledger Bin, well and tilled plot; the ranch with barn, coop and Wren's cottage; the windmill lot; the fishing hut, two piers, the ferry, the ford, lantern posts; the orchard on the Far Bank; the broken bridge; cliffs and stairs below the Highlands.
+  3. `pnpm dev`, open the town: the camera starts on the forecourt; twelve people in different hair, clothes and accessories stroll it, with callsign tags; within a minute speech bubbles appear with comments and emote pops (?, !, zzz, letter, heart, gear) on state changes. Arrow keys, WASD or dragging pan the camera.
+  4. Water at the river shimmers (two frames); the panel on the right shows a portrait per agent whose expression follows the state (surprised when waiting, sad when in error); the header and the panel are wood with brass corners.
+  5. Between 18:00 and 07:00 local time the town darkens blue-violet and windows, lamps and lanterns glow; 09:30–16:00 New York time on a weekday the firm's windows glow in daylight.
+  6. The season follows the clock: `tiles-spring/summer/fall/winter.png` are the same sheet recoloured; a save created today shows spring.
+
 ### Open
 
 - Nothing blocks the merge. Carried forward: `PLAN.md` §6 question 1 (where the agent repo lives; Phase 1 needs it to wire a real adapter) and question 5 (retune the §10 crop table or not; Phase 6). The Ember Vine row of §10 does not follow the formula the other 21 crops follow (`packages/game-core/test/economy.test.ts` pins it; Phase 6). The guardrail audit's two findings were fixed before the push.

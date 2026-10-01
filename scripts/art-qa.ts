@@ -1,15 +1,18 @@
-// pnpm art:qa — PROMPT.md §4.7. Phase 0 enforces the checks that need no finished art: every PNG
-// under art/ and the placeholder folder sits on the 16-px grid, uses only art/palette.gpl colours and
-// has a provenance entry. Orphan pixels, silhouettes, light direction, crop-stage and portrait
-// diffs arrive with the art pipeline phase (VERIFY.md lists them as pending).
+// pnpm art:qa — PROMPT.md §4.7. Every PNG under art/ and the client's assets must sit on the
+// 16-px grid, use only art/palette.gpl colours and carry a provenance entry. Character sheets must
+// keep their silhouettes inside each 16×32 cell and have no orphan pixels; portrait strips must
+// change at least 12 pixels per expression. Still pending for the art phase: light direction,
+// identical crop stages.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { PNG } from 'pngjs';
 import { readPalette, rgbKey } from './palette.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const SCAN = ['art', join('apps', 'town-client', 'public', 'assets', 'placeholder')];
+const SCAN = ['art', join('apps', 'town-client', 'public', 'assets')];
 const GRID = 16;
+const PORTRAIT = 64;
+const MIN_EXPRESSION_DIFF = 12;
 
 function pngs(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -36,6 +39,63 @@ const problems: string[] = [];
 let checked = 0;
 if (palette.size !== 48) problems.push(`art/palette.gpl: ${palette.size} colours, §4.3 wants 48`);
 
+const opaque = (png: PNG, x: number, y: number): boolean =>
+  x >= 0 && y >= 0 && x < png.width && y < png.height && png.data[(y * png.width + x) * 4 + 3]! > 0;
+
+/** An opaque pixel with no opaque neighbour in the 8-neighbourhood. */
+function orphans(png: PNG): number {
+  let n = 0;
+  for (let y = 0; y < png.height; y++) {
+    for (let x = 0; x < png.width; x++) {
+      if (!opaque(png, x, y)) continue;
+      let alone = true;
+      for (let dy = -1; dy <= 1 && alone; dy++)
+        for (let dx = -1; dx <= 1; dx++)
+          if ((dx || dy) && opaque(png, x + dx, y + dy)) alone = false;
+      if (alone) n++;
+    }
+  }
+  return n;
+}
+
+/** Character atlases: every 16×32 cell keeps its top, left and right edge columns clear. */
+function silhouettesTouchFrame(png: PNG): number {
+  let n = 0;
+  for (let cy = 0; cy < png.height; cy += 32) {
+    for (let cx = 0; cx < png.width; cx += 16) {
+      let touches = false;
+      for (let y = cy; y < cy + 32 && !touches; y++)
+        if (opaque(png, cx, y) || opaque(png, cx + 15, y)) touches = true;
+      for (let x = cx; x < cx + 16 && !touches; x++) if (opaque(png, x, cy)) touches = true;
+      if (touches) n++;
+    }
+  }
+  return n;
+}
+
+function expressionDiffs(png: PNG): number[] {
+  const frames = png.width / PORTRAIT;
+  const diffs: number[] = [];
+  for (let f = 1; f < frames; f++) {
+    let d = 0;
+    for (let y = 0; y < PORTRAIT; y++) {
+      for (let x = 0; x < PORTRAIT; x++) {
+        const a = (y * png.width + x) * 4;
+        const b = (y * png.width + f * PORTRAIT + x) * 4;
+        if (
+          png.data[a] !== png.data[b] ||
+          png.data[a + 1] !== png.data[b + 1] ||
+          png.data[a + 2] !== png.data[b + 2] ||
+          png.data[a + 3] !== png.data[b + 3]
+        )
+          d++;
+      }
+    }
+    diffs.push(d);
+  }
+  return diffs;
+}
+
 for (const file of SCAN.flatMap((d) => pngs(join(ROOT, d)))) {
   const rel = relative(ROOT, file);
   checked++;
@@ -44,8 +104,8 @@ for (const file of SCAN.flatMap((d) => pngs(join(ROOT, d)))) {
   const png = PNG.sync.read(readFileSync(file));
   if (png.width % GRID || png.height % GRID)
     problems.push(`${rel}: ${png.width}×${png.height} is off the ${GRID}-px grid`);
-  const strangers = new Set<string>();
   if (licence?.startsWith('CC0')) continue; // third-party placeholders keep their own palette (§4.6)
+  const strangers = new Set<string>();
   for (let i = 0; i < png.data.length; i += 4) {
     if (png.data[i + 3] === 0) continue;
     const key = rgbKey(png.data[i]!, png.data[i + 1]!, png.data[i + 2]!);
@@ -55,6 +115,22 @@ for (const file of SCAN.flatMap((d) => pngs(join(ROOT, d)))) {
     problems.push(
       `${rel}: ${strangers.size} colour(s) outside art/palette.gpl, e.g. rgb(${[...strangers][0]})`,
     );
+  if (rel.endsWith('characters.png')) {
+    const o = orphans(png);
+    if (o) problems.push(`${rel}: ${o} orphan pixel(s)`);
+    const s = silhouettesTouchFrame(png);
+    if (s) problems.push(`${rel}: ${s} frame(s) with a silhouette touching the cell edge`);
+  }
+  if (rel.includes('/portraits/')) {
+    const o = orphans(png);
+    if (o) problems.push(`${rel}: ${o} orphan pixel(s)`);
+    expressionDiffs(png).forEach((d, i) => {
+      if (d < MIN_EXPRESSION_DIFF)
+        problems.push(
+          `${rel}: expression ${i + 1} differs from neutral by ${d} px (< ${MIN_EXPRESSION_DIFF})`,
+        );
+    });
+  }
 }
 
 if (problems.length) {
@@ -62,4 +138,4 @@ if (problems.length) {
   for (const p of problems) console.error(`  ${p}`);
   process.exit(1);
 }
-console.log(`art:qa — ${checked} image(s) on grid, in palette, with provenance`);
+console.log(`art:qa — ${checked} image(s) on grid, in palette, with provenance; sheets clean`);
