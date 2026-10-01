@@ -12,7 +12,7 @@ docs/GUARDRAILS.md
 **/*.prompt.md
 scripts/banned-words.txt
 # generated
-apps/town-client/public/assets/**/*.json
+apps/town-client/public/assets/**
 packages/schema/json/*.json
 packages/sim/fixtures/*.json
 art/provenance.json
