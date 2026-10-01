@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.vite/
+coverage/
+*.log
+sim/last-run.log
+data/*.sqlite
+screens/
+test-results/
+playwright-report/
+.DS_Store
+
+# real agent cards never enter git (PROMPT.md §3); the sim's fixtures live in packages/sim/fixtures
+agents/*
+!agents/.gitkeep
+
+# raw art stays local (PROMPT.md §3)
+art/raw/

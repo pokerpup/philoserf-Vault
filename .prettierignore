@@ -1,0 +1,21 @@
+pnpm-lock.yaml
+node_modules
+dist
+screens
+test-results
+playwright-report
+# verbatim from the design doc
+CLAUDE.md
+docs/spec/**
+docs/GUARDRAILS.md
+.claude/**
+**/*.prompt.md
+scripts/banned-words.txt
+# generated
+apps/town-client/public/assets/**/*.json
+packages/schema/json/*.json
+packages/sim/fixtures/*.json
+art/provenance.json
+# prose is hand-formatted; much of it is verbatim spec
+*.md
+packages/game-data/schemas/**
