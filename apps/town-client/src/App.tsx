@@ -9,7 +9,7 @@ export default function App() {
     <div id="app">
       <ClockBar clock={town.clock} connected={town.connected} />
       <PhaserGame />
-      <aside id="agents-panel">
+      <aside id="agents-panel" className="plank">
         <h2>The Trading Firm · {town.agents.length} desks</h2>
         <AgentList agents={town.agents} lastLine={town.lastLine} />
       </aside>

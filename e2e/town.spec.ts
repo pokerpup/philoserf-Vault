@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
-// Phase 0 TESTS FIRST: `pnpm dev` renders the placeholder map at an integer zoom with
-// image-rendering: pixelated, and lists the sim's 12 agents in a plain DOM list.
-test('placeholder town renders at an integer zoom and lists 12 sim agents', async ({ page }) => {
+// Phase 0 TESTS FIRST: `pnpm dev` renders the map at an integer zoom with image-rendering: pixelated
+// and lists the sim's 12 agents in a plain DOM list; the compiled art puts the same 12 on Firm Hill.
+test('Tallyford renders at an integer zoom with 12 sim agents listed and on the map', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__townReady === true, null, { timeout: 45_000 });
 
@@ -23,7 +25,12 @@ test('placeholder town renders at an integer zoom and lists 12 sim agents', asyn
 
   await expect(page.locator('#agents li')).toHaveCount(12, { timeout: 15_000 });
   await expect(page.locator('#agents li[data-online="true"]')).toHaveCount(12, { timeout: 30_000 });
+  await page.waitForFunction(() => window.__townAgents === 12, null, { timeout: 15_000 });
   await expect(page.locator('#clock')).toContainText('Year 1');
+  await expect(page.locator('#agents li .portrait').first()).toHaveCSS(
+    'image-rendering',
+    'pixelated',
+  );
 
   mkdirSync('screens', { recursive: true });
   await page.screenshot({ path: 'screens/phase-0-town.png' });

@@ -9,7 +9,7 @@ const SEASON_LABEL: Record<ClockSummary['season'], string> = {
 
 export function ClockBar({ clock, connected }: { clock: ClockSummary | null; connected: boolean }) {
   return (
-    <header id="clock">
+    <header id="clock" className="plank">
       <strong>Tallyford</strong>
       {clock ? (
         <>
@@ -23,7 +23,9 @@ export function ClockBar({ clock, connected }: { clock: ClockSummary | null; con
       ) : (
         <span>waiting for the Town Server…</span>
       )}
-      <span style={{ marginLeft: 'auto' }}>{connected ? 'stream live' : 'stream offline'}</span>
+      <span className="live" data-on={connected}>
+        {connected ? 'stream live' : 'stream offline'}
+      </span>
     </header>
   );
 }
