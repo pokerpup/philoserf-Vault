@@ -25,7 +25,7 @@ The town stays cozy; the danger lives below it. Everything above ground — the 
 | Food buffs, life elixirs | Meals and Tonics with status effects | Brother Osric's chapel sells Tonics |
 | Combat skill and professions | Arms skill; Ledgercraft is new | Magic is a ledger-themed four-school system |
 | Adventurer's Guild | The Armory in the Exchange gatehouse (Hesper Lund) | Bounties come from the Noticeboard, not a guild |
-| Backpack upgrades | Satchel → Pack → Deluxe Pack → Vault Pack, plus a Tool Belt | Cloth and a Moonstone for the last tier |
+| Backpack upgrades | Satchel → Pack → Ledger Pack → Vault Pack, plus a Tool Belt | Cloth and a Moonstone for the last tier |
 
 **Safety line for this tab.** Weapons, spells, loot, companions and missions are in-game only: no gear, buff or mission reward reads or writes an agent's limits, tier, allocation, permission or model; live agents never fight, never join the party and never appear in the Vault; companion AI is scripted, never a model; the "honest ledger" counters in §10 come only from in-game choices, never from permission decisions.
 
@@ -235,7 +235,7 @@ Five weapon classes, five tiers, one signature move each, and nine named uniques
 
 ## 8. Tools, backpacks, the tool belt, tonics and meals
 
-**Backpacks** replace the fixed 36-slot inventory: Satchel 12 slots (start) → Pack 24 (2,000 ₥, Ocampo & Daughter) → Deluxe Pack 36 (10,000 ₥) → Vault Pack 48 (crafted: Deluxe Pack + 20 cloth + 1 Moonstone, at the loom). The hotbar stays 12. **Ore Sack** (Hesper, 3,000 ₥): ore and gems stack to 9,999 in one slot. **Bait Box** (Ansel, 1,500 ₥): bait and tackle live outside the pack.
+**Backpacks** replace the fixed 36-slot inventory: Satchel 12 slots (start) → Pack 24 (2,000 ₥, Ocampo & Daughter) → Ledger Pack 36 (10,000 ₥) → Vault Pack 48 (crafted: Ledger Pack + 20 cloth + 1 Moonstone, at the loom). The hotbar stays 12. **Ore Sack** (Hesper, 3,000 ₥): ore and gems stack to 9,999 in one slot. **Bait Box** (Ansel, 1,500 ₥): bait and tackle live outside the pack.
 
 **Tool belt** (Tobiah, 5,000 ₥ + 5 iron bars): the hoe, watering can, axe, pickaxe, rod and equipped weapon no longer take pack slots and swap with the number keys. **Tools as weapons:** the axe and pickaxe can be swung in the Vault at Hammer speed and 0.7× damage, so a farmer who forgot a sword is never helpless; the watering can douses Scorched allies.
 
@@ -332,7 +332,7 @@ The dungeon is a second income with higher variance than the farm, capped by Vig
 
 **Architecture.** `CombatScene` extends the Vault scene with Arcade physics; every fighter is an entity with `Health`, `Statuses`, `Hitbox`/`Hurtbox`, a `StateMachine` (idle → telegraph → attack → recover → stagger → down) and a behaviour from a small library (chase, dash, ranged, summon, shield, ambush, patrol, swarm) referenced by `enemies.json`; keepers are YAML scripts (`bosses/*.yaml`: phases with HP thresholds, attack patterns, dialogue lines, adds); statuses are one data-driven system (`status.json`: apply, tick, expire, cancel pairs, icons, sounds) shared by players, companions and enemies; loot tables (`loot.yaml`) roll from the day seed plus a run nonce; floors are generated from wing-specific prefab rooms (`dungeon.yaml`: room sets, corridor rules, enemy budget, hazard budget) with a seeded layout so a floor replays identically on the same seed; companions use the NPC pathing with a follow-and-engage behaviour and never a model; projectiles and hit effects are pooled; at most 20 live enemies and 60 projectiles per floor.
 
-**Saves** add `equipment` (weapon, armor, charm, soles, seals, tempering), `spells_known` (with levels), `backpack_tier`, `combat` (Heart, Ink, Arms and Ledgercraft XP, difficulty), `vault` (deepest floor, elevator stops, keepers beaten, pages found, bounties done), `companions` (who, hearts, class, level), `honest_ledger` (counters), `legends` (caught), `fish_pond`, `traps`. Migrations carry the earlier 36-slot inventory into a Deluxe Pack.
+**Saves** add `equipment` (weapon, armor, charm, soles, seals, tempering), `spells_known` (with levels), `backpack_tier`, `combat` (Heart, Ink, Arms and Ledgercraft XP, difficulty), `vault` (deepest floor, elevator stops, keepers beaten, pages found, bounties done), `companions` (who, hearts, class, level), `honest_ledger` (counters), `legends` (caught), `fish_pond`, `traps`. Migrations carry the earlier 36-slot inventory into a Ledger Pack.
 
 **Data files added to `packages/game-data`:** `weapons.json`, `armor.json`, `seals.json`, `spells.json`, `status.json`, `enemies.json`, `bosses/*.yaml`, `dungeon.yaml`, `loot.yaml`, `missions/*.yaml`, `bounties.yaml`, `tonics.json`, `meals.json` (merged into `recipes.json`), `rods.json`, `tackle.json`, `legends.yaml`, `characters/hesper.card.json`, `osric`, `juniper`, `tallow`, and the five keepers' cards.
 

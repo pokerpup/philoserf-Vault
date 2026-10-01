@@ -1,7 +1,7 @@
 {
   "permissions": {
     "deny": [
-      "Read(./.env*)", "Read(./agents/**)", "Edit(./agents/**)",
+      "Read(./.env*)", "Read(/agents/**)", "Edit(/agents/**)",
       "Edit(./apps/town-server/gateway/**)", "Edit(./apps/town-server/mayor/policy/**)",
       "Bash(curl *)", "Bash(wget *)", "Bash(rm -rf *)"
     ],

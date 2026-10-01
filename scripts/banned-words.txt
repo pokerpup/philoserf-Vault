@@ -109,7 +109,7 @@ Blue Jazz
 Summer Spangle
 Cinder Shard
 Radioactive Ore
-# backpack tiers: RPG.md §1 and §8 reuse "Deluxe Pack" as a Tallyford tier — rename it when Phase 10 builds it
+# backpack tiers (the Tallyford 36-slot tier is the Ledger Pack)
 Large Pack
 Deluxe Pack
 
