@@ -64,14 +64,20 @@ export class Actor {
           repeat: -1,
         });
     }
+    // the callsign tag shows on hover, so a crowd on the forecourt stays readable
     this.label = scene.add
       .bitmapText(home.x, home.y - 34, 'tally', summary.callsign)
       .setOrigin(0.5, 1)
-      .setDepth(DEPTH.labels);
+      .setDepth(DEPTH.labels)
+      .setVisible(false);
     this.labelBack = scene.add
       .rectangle(home.x, home.y - 37, this.label.width + 4, 9, 0x15121c, 0.75)
       .setOrigin(0.5, 0.5)
-      .setDepth(DEPTH.labels - 1);
+      .setDepth(DEPTH.labels - 1)
+      .setVisible(false);
+    this.sprite.setInteractive({ useHandCursor: true });
+    this.sprite.on('pointerover', () => this.setTag(true));
+    this.sprite.on('pointerout', () => this.setTag(false));
     this.pauseUntil = scene.time.now + this.rng() * WANDER_PAUSE_MS[1];
     this.apply(summary);
   }
