@@ -1,11 +1,13 @@
-# Phase 4
+# Phase 4 — Midjourney assets
 
-> **Placeholder.** Phases 0–4 come from the original Agent Town prompt (§1–§11), which is not yet in this repo. Once `docs/spec/00-prompt.md` holds it, replace this file with Phase 4's scope and acceptance criteria copied verbatim from there (playbook §1.2), keeping the layout of `phase-5.md`.
+Source: `docs/spec/PROMPT.md` §17, scope and acceptance criteria copied verbatim (the criteria split at the source's own separators). Session prompt: `docs/spec/phases/phase-4.prompt.md`. Read with `docs/GUARDRAILS.md`.
 
 ## Scope
 
-Copy verbatim from `docs/spec/00-prompt.md`.
+Style Bible batch, per-building and per-character batches (Path A; Path B only if I opt in), the processing pipeline, hot-swapping of placeholders.
 
 ## Acceptance criteria
 
-Copy verbatim from `docs/spec/00-prompt.md`.
+- every processed asset passes `pnpm art:qa`
+- the dashboard shows no placeholder art for the firm and its agents
+- provenance is complete

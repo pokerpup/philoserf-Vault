@@ -4,7 +4,7 @@ description: Write the active phase's acceptance criteria into VERIFY.md as clic
 disable-model-invocation: true
 ---
 
-Read the active phase file first: docs/spec/phases/CURRENT, or the docs/spec/phases/phase-N.md named in the arguments. Then docs/spec/12-game-layer.md §10 (definition of done: VERIFY.md lists every acceptance criterion with exact steps) and docs/GUARDRAILS.md.
+Read the active phase file first: docs/spec/phases/CURRENT, or the docs/spec/phases/phase-N.md named in the arguments. Then docs/spec/PROMPT.md §17 (definition of done: VERIFY.md lists every acceptance criterion with exact click-by-click steps) and docs/GUARDRAILS.md.
 Then, for that phase, without starting the app and without editing source, tests or data:
 1. Quote every acceptance criterion verbatim, numbered as in the phase file; never paraphrase, merge or drop one.
 2. For each criterion, name the test(s) that cover it and the command that runs them: Vitest files in packages/game-core and packages/save-migrations (pnpm test), Playwright specs (pnpm test:e2e), the checks pnpm data:lint, pnpm depcruise, pnpm art:qa and pnpm sim:year. Commits carry the criterion number, so git log --oneline maps tests to criteria. No test found means the criterion is open.

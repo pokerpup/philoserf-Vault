@@ -4,7 +4,7 @@ description: Scaffold a new Tallyford NPC (card, schedule, dialogue matrix, port
 disable-model-invocation: true
 ---
 
-Read docs/spec/12-game-layer.md §8 (cast table, style guide) and rules/content.md first.
+Read docs/spec/PROMPT.md §11 (cast table, dialogue rules) and .claude/rules/content.md first; docs/spec/GAME-LAYER.md §8 has the full cast table with homes.
 Then, for the character named in the arguments:
 1. characters/<id>.card.json from the persona template; loves, birthday, home from the cast table.
 2. schedules/<id>.yaml from templates/schedule-<role>.yaml; add a rain and a festival override.

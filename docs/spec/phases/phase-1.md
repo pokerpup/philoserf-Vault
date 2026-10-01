@@ -1,11 +1,12 @@
-# Phase 1
+# Phase 1 — MVP town
 
-> **Placeholder.** Phases 0–4 come from the original Agent Town prompt (§1–§11), which is not yet in this repo. Once `docs/spec/00-prompt.md` holds it, replace this file with Phase 1's scope and acceptance criteria copied verbatim from there (playbook §1.2), keeping the layout of `phase-5.md`.
+Source: `docs/spec/PROMPT.md` §17, scope and acceptance criteria copied verbatim (the criteria split at the source's own separators). Session prompt: `docs/spec/phases/phase-1.prompt.md`. Read with `docs/GUARDRAILS.md`.
 
 ## Scope
 
-Copy verbatim from `docs/spec/00-prompt.md`.
+Phaser town, the Trading Firm with three department rooms, the 12 simulated agents walking and working with bubbles, the manifest registry with hot reload, Rex's card loading.
 
 ## Acceptance criteria
 
-Copy verbatim from `docs/spec/00-prompt.md`.
+- dropping `agents/stock-trader-01.card.json` creates his desk, card, portrait slot and reporting line within 5 seconds with no code change
+- deleting it retires him gracefully

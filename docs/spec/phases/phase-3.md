@@ -1,11 +1,12 @@
-# Phase 3
+# Phase 3 — Evolving town
 
-> **Placeholder.** Phases 0–4 come from the original Agent Town prompt (§1–§11), which is not yet in this repo. Once `docs/spec/00-prompt.md` holds it, replace this file with Phase 3's scope and acceptance criteria copied verbatim from there (playbook §1.2), keeping the layout of `phase-5.md`.
+Source: `docs/spec/PROMPT.md` §17, scope and acceptance criteria copied verbatim (the criteria split at the source's own separators). Session prompt: `docs/spec/phases/phase-3.prompt.md`. Read with `docs/GUARDRAILS.md`.
 
 ## Scope
 
-Copy verbatim from `docs/spec/00-prompt.md`.
+Economy engine, Town Levels, building tiers, lots, roads, seasons on the real calendar, day/night, weather, time-lapse.
 
 ## Acceptance criteria
 
-Copy verbatim from `docs/spec/00-prompt.md`.
+- a replayed 90-day simulated history reaches at least L3 with the correct unlocks and renders identically on two runs
+- rain appears over a building with a negative week and clears on recovery
