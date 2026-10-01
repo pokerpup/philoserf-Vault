@@ -37,6 +37,7 @@ Session date 2026-10-01. The three BUILD questions ("ask me before building") we
 - **`config/bridge.yaml` and `config/evolution.yaml`** were created from §7.4 and §7.1 verbatim with `rate: 0`. Both are on the settings "ask" list; they carry the spec's own numbers and nothing else, and are flagged here for your sign-off.
 - **Guardrail audit fixes** (the `guardrail-reviewer` subagent, run before the Phase 0 push): the wall rule is now `reachable: true`, so an import *path* through `events/` or another package fails like a direct import, with a transitive case in the test; `apps/town-client/vite.config.ts` sets `envDir: false` so Vite never loads a `.env*` file from the client folder.
 - **The depcruise proof** is a Vitest test (`scripts/depcruise-wall.test.ts`) that builds a throwaway tree with one bad import from `game-core` into `mayor/policy` and one from `apps/town-server/game` into `gateway`, asserts the rule fires, removes them, asserts clean. The repo never carries the bad import.
+- **Plan approved 2026-10-01** ("approve and run"): Fastify, ports 3000/3001 and the roster mapping are settled; the agent-repo location is asked again at the start of Phase 1; the crop-table question waits for Phase 6. `docs/spec/phases/CURRENT` now points at `phase-1.md` so the next session's start hook loads the right phase.
 
 ## Phase 1 — MVP town
 

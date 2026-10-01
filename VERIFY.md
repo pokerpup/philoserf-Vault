@@ -4,14 +4,14 @@ One section per phase: every acceptance criterion quoted verbatim, the tests tha
 
 ## Phase 0 — Discover and scaffold (no product code)
 
-Criteria from `docs/spec/phases/phase-0.md`. Walked by the session on 2026-10-01 in the cloud container (Chromium 1440×900); not yet walked by hand by the owner.
+Criteria from `docs/spec/phases/phase-0.md`. Walked by the session on 2026-10-01 in the cloud container (Chromium 1440×900 and 1920×1080); the owner approved the plan the same day. The hand walk below is still yours to do on your own machine.
 
-### "I approve the plan"
+### 1. "I approve the plan"
 
-- Covered by: nothing automated. Read `PLAN.md`; answer its §6 questions; edit `DECISIONS.md` where a default is wrong.
-- Status: **open** until you say so.
+- Covered by: nothing automated. `PLAN.md` was read and approved by the owner on 2026-10-01 ("approve and run"); the §6 defaults stand, and question 5 (the crop table) carries to Phase 6.
+- Status: **done**.
 
-### "`pnpm dev` shows the placeholder town"
+### 2. "`pnpm dev` shows the placeholder town"
 
 - Covered by: `e2e/town.spec.ts` (Playwright), `apps/town-client/test/zoom.test.ts`, `apps/town-server/test/app.test.ts`.
 - Steps:
@@ -22,7 +22,7 @@ Criteria from `docs/spec/phases/phase-0.md`. Walked by the session on 2026-10-01
   5. `curl -s localhost:3001/api/health` → `{"ok":true,"phase":0,"agents":12,"bridge_rate":0,"fleet":"sim"}`; `curl -N localhost:3001/api/stream | head -c 600` shows `event: clock`, `event: agents` then `event: agent_event` frames.
   6. `pnpm test:e2e` passes and writes `screens/phase-0-town.png`.
 
-### "every check runs (even if trivially green)"
+### 3. "every check runs (even if trivially green)"
 
 - Covered by: the commands themselves; `scripts/depcruise-wall.test.ts` proves the wall rule fires.
 - Steps, each exits 0:
@@ -35,6 +35,11 @@ Criteria from `docs/spec/phases/phase-0.md`. Walked by the session on 2026-10-01
   7. `pnpm sim:year` → the §10 income table shape with `(not simulated yet)` and `sim/last-run.log`; `pnpm sim:vault` → the RPG.md §11 wing table shape.
   8. `scripts/banned-words.sh packages/game-data art apps/town-client/src packages/sim/src` → no output, exit 0.
 - Pending for later phases (listed so the stub is honest): `art:qa` orphan-pixel, silhouette, light-direction, crop-stage and portrait-diff rules (Phase 4); `sim:year` real run (Phase 6); `sim:vault` real run (Phase 10).
+
+### Open
+
+- Nothing blocks the merge. Carried forward: `PLAN.md` §6 question 1 (where the agent repo lives; Phase 1 needs it to wire a real adapter) and question 5 (retune the §10 crop table or not; Phase 6). The Ember Vine row of §10 does not follow the formula the other 21 crops follow (`packages/game-core/test/economy.test.ts` pins it; Phase 6). The guardrail audit's two findings were fixed before the push.
+- Screens (`screens/` is git-ignored): `pnpm test:e2e` writes `screens/phase-0-town.png` (1440×900, 2×). The session also captured a 1920×1080 shot at 3× after a minute of fleet events, with every desk showing a comment line; it was sent in the session chat.
 
 ## Phase 1 — MVP town
 

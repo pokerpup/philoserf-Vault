@@ -1,6 +1,6 @@
 # PLAN — Agent Town, Phase 0 → Phase 4
 
-Written by the Phase 0 session (`docs/spec/phases/phase-0.prompt.md`, BUILD item 1). Acceptance criterion one of Phase 0 is "I approve the plan": nothing below is settled until you do.
+Written by the Phase 0 session (`docs/spec/phases/phase-0.prompt.md`, BUILD item 1). **Approved by the owner on 2026-10-01**: the defaults in §6 stand (Fastify, ports 3000/3001, the department mapping); question 1 is answered when Phase 1 starts, question 5 in Phase 6.
 
 ## 1. What exists after Phase 0
 
