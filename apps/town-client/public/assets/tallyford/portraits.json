@@ -1,0 +1,61 @@
+{
+  "expressions": [
+    "neutral",
+    "happy",
+    "sad",
+    "annoyed",
+    "surprised",
+    "smug"
+  ],
+  "size": 64,
+  "people": [
+    {
+      "id": "accountant-01",
+      "name": "Harold Pembury"
+    },
+    {
+      "id": "compliance-officer-01",
+      "name": "Thaddeus Okoro"
+    },
+    {
+      "id": "data-engineer-01",
+      "name": "Amara Desai"
+    },
+    {
+      "id": "fundamentals-analyst-01",
+      "name": "Imani Rhodes"
+    },
+    {
+      "id": "news-analyst-01",
+      "name": "Casper Nyberg"
+    },
+    {
+      "id": "operations-clerk-01",
+      "name": "Rosa Delacroix"
+    },
+    {
+      "id": "portfolio-manager-01",
+      "name": "Dalia Marchbanks"
+    },
+    {
+      "id": "quant-researcher-01",
+      "name": "Teodor Vask"
+    },
+    {
+      "id": "risk-manager-01",
+      "name": "Ingrid Solvay"
+    },
+    {
+      "id": "software-engineer-01",
+      "name": "Benedikt Hale"
+    },
+    {
+      "id": "stock-trader-01",
+      "name": "Rex Tickerly"
+    },
+    {
+      "id": "technical-analyst-01",
+      "name": "Yuki Haldane"
+    }
+  ]
+}

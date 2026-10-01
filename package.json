@@ -22,9 +22,10 @@
     "sim": "tsx packages/sim/src/cli.ts run",
     "sim:year": "tsx packages/sim/src/cli.ts year",
     "sim:vault": "tsx packages/sim/src/cli.ts vault",
-    "placeholders": "tsx scripts/gen-placeholders.ts",
     "schema:gen": "tsx packages/schema/scripts/gen-json-schema.ts",
-    "sim:fixtures": "tsx packages/sim/scripts/gen-fixtures.ts"
+    "sim:fixtures": "tsx packages/sim/scripts/gen-fixtures.ts",
+    "art:preview": "tsx scripts/art-preview.ts",
+    "art:build": "tsx scripts/art-build.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

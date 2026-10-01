@@ -1,16 +1,149 @@
 [
   {
-    "file": "apps/town-client/public/assets/placeholder/tileset.png",
-    "source": "generated: scripts/gen-placeholders.ts",
+    "file": "apps/town-client/public/assets/tallyford/tiles-spring.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
     "prompt": null,
     "date": "2026-10-01",
-    "licence": "project (CC0-equivalent placeholder; replaced by the art pipeline)"
+    "licence": "project (MIT, see LICENSE)"
   },
   {
-    "file": "apps/town-client/public/assets/placeholder/town.json",
-    "source": "generated: scripts/gen-placeholders.ts",
+    "file": "apps/town-client/public/assets/tallyford/tiles-summer.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
     "prompt": null,
     "date": "2026-10-01",
-    "licence": "project (CC0-equivalent placeholder; replaced by the art pipeline)"
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/tiles-fall.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/tiles-winter.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/accountant-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/compliance-officer-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/data-engineer-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/fundamentals-analyst-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/news-analyst-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/operations-clerk-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/portfolio-manager-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/quant-researcher-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/risk-manager-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/software-engineer-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/stock-trader-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/portraits/technical-analyst-01.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/characters.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/ui.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/ui/panel.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/font/tally.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
+  },
+  {
+    "file": "apps/town-client/public/assets/tallyford/font/tally-ink.png",
+    "source": "original: art/pixel/*.ts compiled by scripts/art-build.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (MIT, see LICENSE)"
   }
 ]
