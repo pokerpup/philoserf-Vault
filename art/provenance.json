@@ -1,0 +1,16 @@
+[
+  {
+    "file": "apps/town-client/public/assets/placeholder/tileset.png",
+    "source": "generated: scripts/gen-placeholders.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (CC0-equivalent placeholder; replaced by the art pipeline)"
+  },
+  {
+    "file": "apps/town-client/public/assets/placeholder/town.json",
+    "source": "generated: scripts/gen-placeholders.ts",
+    "prompt": null,
+    "date": "2026-10-01",
+    "licence": "project (CC0-equivalent placeholder; replaced by the art pipeline)"
+  }
+]

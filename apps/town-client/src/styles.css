@@ -1,0 +1,104 @@
+:root {
+  color-scheme: dark;
+  --ink: #f1e9d8;
+  --paper: #1b1b2a;
+  --panel: #2a2438;
+  --brass: #c9a66b;
+  --mute: #9a93a8;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font:
+    14px/1.4 ui-monospace,
+    'Cascadia Mono',
+    'JetBrains Mono',
+    Menlo,
+    monospace;
+}
+#app {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+#clock {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--panel);
+  border-bottom: 2px solid var(--brass);
+}
+#clock strong {
+  color: var(--brass);
+}
+#game-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0d0d14;
+}
+/* §4.2: every canvas, sprite and portrait is shown at an integer multiple with nearest-neighbour scaling. */
+#game-container canvas,
+img.pixel {
+  image-rendering: pixelated !important;
+}
+#agents-panel {
+  overflow: auto;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--brass);
+  background: var(--panel);
+}
+#agents-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: var(--brass);
+}
+#agents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#agents li {
+  padding: 0.4rem 0;
+  border-bottom: 1px dotted #4a4360;
+}
+#agents li .who {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+#agents li .callsign {
+  color: var(--brass);
+  font-weight: 700;
+}
+#agents li .dept {
+  color: var(--mute);
+  font-size: 0.8em;
+  margin-left: auto;
+}
+#agents li .state {
+  font-size: 0.85em;
+}
+#agents li[data-online='false'] .state {
+  color: #d06a6a;
+}
+#agents li .line {
+  display: block;
+  color: var(--mute);
+  font-size: 0.85em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

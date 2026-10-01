@@ -1,0 +1,52 @@
+GIMP Palette
+Name: Tallyford provisional 48
+Columns: 8
+# PROMPT.md §4.3: one shared 48-colour warm palette. Provisional until the art pipeline phase locks it.
+ 13  13  20	night-ink
+ 27  27  42	ink
+ 42  36  56	plum-shadow
+ 74  67  96	plum
+ 95  80  85	dusk
+138 120 115	ash
+170 160 150	stone-light
+205 200 185	bone
+241 233 216	paper
+255 250 236	cream
+ 60  38  28	bark-dark
+ 94  62  40	bark
+140  96  58	timber
+181 134  84	oak
+201 166 107	brass
+230 206 150	straw
+ 52  70  44	pine-dark
+ 72  98  56	pine
+ 98 134  66	moss
+128 168  82	grass
+160 196 102	grass-light
+198 214 130	meadow
+ 92  60  48	soil-dark
+130  86  60	soil
+164 112  78	tilled
+196 150 110	sand
+222 190 150	sand-light
+ 34  58  84	river-deep
+ 46  84 120	river
+ 72 124 160	water
+112 170 196	water-light
+176 216 228	foam
+164  74  63	brick
+200  96  72	terracotta
+232 130  92	ember
+246 176 120	peach
+120  40  52	wine
+178  58  70	ruby
+224  92  96	rose
+140  86 110	heather
+140 106 158	lavender
+186 150 206	lilac
+ 60 110 110	teal-dark
+ 90 160 150	teal
+140 200 180	mint
+232 196  72	gold
+250 226 130	lantern
+255 245 200	light-mask
