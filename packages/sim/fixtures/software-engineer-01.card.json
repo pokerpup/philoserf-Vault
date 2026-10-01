@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/software-engineer-01.png",
+          "sprite": "characters:software-engineer-01",
           "desk_style": "engineer-desk-graph-wall",
           "palette_accent": "#7C9A5E",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "curly",
+            "hair_color": "hair-red",
+            "eyes": "moss",
+            "top": "cloth-green",
+            "bottom": "cloth-brown",
+            "shoes": "bark-dark",
+            "accessory": "glasses"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/fundamentals-analyst-01.png",
+          "sprite": "characters:fundamentals-analyst-01",
           "desk_style": "analyst-desk-paper-stacks",
           "palette_accent": "#C98A3C",
-          "layers": null
+          "layers": {
+            "skin": "umber",
+            "hair": "bun",
+            "hair_color": "hair-black",
+            "eyes": "bark",
+            "top": "cloth-teal",
+            "bottom": "cloth-charcoal",
+            "shoes": "bark-dark",
+            "accessory": "none"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

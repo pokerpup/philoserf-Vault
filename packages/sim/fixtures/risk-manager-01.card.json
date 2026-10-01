@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/risk-manager-01.png",
+          "sprite": "characters:risk-manager-01",
           "desk_style": "risk-desk-red-pen",
           "palette_accent": "#B5473F",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "ponytail",
+            "hair_color": "hair-blonde",
+            "eyes": "water",
+            "top": "cloth-navy",
+            "bottom": "cloth-grey",
+            "shoes": "ink",
+            "accessory": "glasses"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

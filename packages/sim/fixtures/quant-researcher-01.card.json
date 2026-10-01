@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/quant-researcher-01.png",
+          "sprite": "characters:quant-researcher-01",
           "desk_style": "research-desk-four-monitors",
           "palette_accent": "#5B8DB8",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "curly",
+            "hair_color": "hair-black",
+            "eyes": "bark",
+            "top": "cloth-plum",
+            "bottom": "cloth-navy",
+            "shoes": "slate",
+            "accessory": "none"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

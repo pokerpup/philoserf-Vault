@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/compliance-officer-01.png",
+          "sprite": "characters:compliance-officer-01",
           "desk_style": "compliance-desk-binder",
           "palette_accent": "#6B7FA3",
-          "layers": null
+          "layers": {
+            "skin": "umber",
+            "hair": "crop",
+            "hair_color": "hair-black",
+            "eyes": "bark",
+            "top": "cloth-charcoal",
+            "bottom": "cloth-charcoal",
+            "shoes": "ink",
+            "accessory": "tie"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

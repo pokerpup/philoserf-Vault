@@ -96,11 +96,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/portfolio-manager-01.png",
+          "sprite": "characters:portfolio-manager-01",
           "desk_style": "corner-desk-two-monitors",
           "palette_accent": "#8C6A9E",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "slick",
+            "hair_color": "hair-grey",
+            "eyes": "water",
+            "top": "cloth-grey",
+            "bottom": "cloth-charcoal",
+            "shoes": "ink",
+            "accessory": "glasses-up"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

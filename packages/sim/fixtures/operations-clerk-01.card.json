@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/operations-clerk-01.png",
+          "sprite": "characters:operations-clerk-01",
           "desk_style": "ops-desk-ledger",
           "palette_accent": "#A8865C",
-          "layers": null
+          "layers": {
+            "skin": "tan",
+            "hair": "bob",
+            "hair_color": "hair-brown",
+            "eyes": "bark",
+            "top": "cloth-cream",
+            "bottom": "cloth-plum",
+            "shoes": "ink",
+            "accessory": "headset"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

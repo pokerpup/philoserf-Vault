@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/news-analyst-01.png",
+          "sprite": "characters:news-analyst-01",
           "desk_style": "news-desk-headphones",
           "palette_accent": "#D96C5F",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "side-part",
+            "hair_color": "hair-blonde",
+            "eyes": "water-light",
+            "top": "cloth-sky",
+            "bottom": "cloth-grey",
+            "shoes": "bark",
+            "accessory": "headset"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

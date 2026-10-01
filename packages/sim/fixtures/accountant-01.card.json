@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/accountant-01.png",
+          "sprite": "characters:accountant-01",
           "desk_style": "accounting-desk-adding-machine",
           "palette_accent": "#5E7F4A",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "balding",
+            "hair_color": "hair-white",
+            "eyes": "slate",
+            "top": "cloth-tan",
+            "bottom": "cloth-brown",
+            "shoes": "bark-dark",
+            "accessory": "glasses"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

@@ -31,6 +31,19 @@ export interface Role {
   report: string;
   desk_style: string;
   palette_accent: string;
+  /** PROMPT.md §4.4 creator layers, drawn by art/pixel from these names (palette ramps, never hex). */
+  look: Look;
+}
+
+export interface Look {
+  skin: 'fair' | 'tan' | 'umber';
+  hair: 'crop' | 'side-part' | 'bob' | 'long' | 'ponytail' | 'bun' | 'curly' | 'slick' | 'balding';
+  hair_color: string;
+  eyes: string;
+  top: string;
+  bottom: string;
+  shoes: string;
+  accessory: 'glasses' | 'glasses-up' | 'headset' | 'tie' | 'none';
 }
 
 export const ROLES: readonly Role[] = [
@@ -79,6 +92,16 @@ export const ROLES: readonly Role[] = [
     report: 'Three ideas proposed, two cleared, one rejected on stop distance. Risk budget held.',
     desk_style: 'corner-desk-two-monitors',
     palette_accent: '#8C6A9E',
+    look: {
+      skin: 'fair',
+      hair: 'slick',
+      hair_color: 'hair-grey',
+      eyes: 'water',
+      top: 'cloth-grey',
+      bottom: 'cloth-charcoal',
+      shoes: 'ink',
+      accessory: 'glasses-up',
+    },
   },
   {
     callsign: 'QUANT',
@@ -124,6 +147,16 @@ export const ROLES: readonly Role[] = [
     report: 'Ranking refreshed twice, one strategy proposed for paper trial, decay within band.',
     desk_style: 'research-desk-four-monitors',
     palette_accent: '#5B8DB8',
+    look: {
+      skin: 'fair',
+      hair: 'curly',
+      hair_color: 'hair-black',
+      eyes: 'bark',
+      top: 'cloth-plum',
+      bottom: 'cloth-navy',
+      shoes: 'slate',
+      accessory: 'none',
+    },
   },
   {
     callsign: 'ANL-FUND',
@@ -171,6 +204,16 @@ export const ROLES: readonly Role[] = [
     report: 'Six filings reviewed, one dilution flag raised, two candidates passed to the desk.',
     desk_style: 'analyst-desk-paper-stacks',
     palette_accent: '#C98A3C',
+    look: {
+      skin: 'umber',
+      hair: 'bun',
+      hair_color: 'hair-black',
+      eyes: 'bark',
+      top: 'cloth-teal',
+      bottom: 'cloth-charcoal',
+      shoes: 'bark-dark',
+      accessory: 'none',
+    },
   },
   {
     callsign: 'ANL-NEWS',
@@ -219,6 +262,16 @@ export const ROLES: readonly Role[] = [
     report: 'Nine catalysts checked, five verified, one pump flag escalated.',
     desk_style: 'news-desk-headphones',
     palette_accent: '#D96C5F',
+    look: {
+      skin: 'fair',
+      hair: 'side-part',
+      hair_color: 'hair-blonde',
+      eyes: 'water-light',
+      top: 'cloth-sky',
+      bottom: 'cloth-grey',
+      shoes: 'bark',
+      accessory: 'headset',
+    },
   },
   {
     callsign: 'ANL-TECH',
@@ -267,6 +320,16 @@ export const ROLES: readonly Role[] = [
     report: 'Levels marked for eight names, five zones proposed, four accepted.',
     desk_style: 'chart-desk-ruler',
     palette_accent: '#4FA38A',
+    look: {
+      skin: 'tan',
+      hair: 'bob',
+      hair_color: 'hair-black',
+      eyes: 'bark',
+      top: 'cloth-red',
+      bottom: 'cloth-navy',
+      shoes: 'ink',
+      accessory: 'none',
+    },
   },
   {
     callsign: 'TRADER',
@@ -306,6 +369,16 @@ export const ROLES: readonly Role[] = [
       'Two entries filled, one exit on target, one stop hit. Net positive, inside every limit.',
     desk_style: 'trading-desk-3-monitors',
     palette_accent: '#D9A441',
+    look: {
+      skin: 'fair',
+      hair: 'crop',
+      hair_color: 'hair-chestnut',
+      eyes: 'moss',
+      top: 'cloth-wine',
+      bottom: 'cloth-charcoal',
+      shoes: 'bark-dark',
+      accessory: 'tie',
+    },
   },
   {
     callsign: 'RISK',
@@ -353,6 +426,16 @@ export const ROLES: readonly Role[] = [
     report: 'Four reviews, one veto, no limit breaches. Exposure ended the day under the cap.',
     desk_style: 'risk-desk-red-pen',
     palette_accent: '#B5473F',
+    look: {
+      skin: 'fair',
+      hair: 'ponytail',
+      hair_color: 'hair-blonde',
+      eyes: 'water',
+      top: 'cloth-navy',
+      bottom: 'cloth-grey',
+      shoes: 'ink',
+      accessory: 'glasses',
+    },
   },
   {
     callsign: 'COMPLY',
@@ -397,6 +480,16 @@ export const ROLES: readonly Role[] = [
     report: 'Daily audit verified, one restriction proposed, two ideas returned for sourcing.',
     desk_style: 'compliance-desk-binder',
     palette_accent: '#6B7FA3',
+    look: {
+      skin: 'umber',
+      hair: 'crop',
+      hair_color: 'hair-black',
+      eyes: 'bark',
+      top: 'cloth-charcoal',
+      bottom: 'cloth-charcoal',
+      shoes: 'ink',
+      accessory: 'tie',
+    },
   },
   {
     callsign: 'DATA',
@@ -445,6 +538,16 @@ export const ROLES: readonly Role[] = [
     report: 'Refresh on time, quality score green, one feed fallback proposed.',
     desk_style: 'data-desk-two-laptops',
     palette_accent: '#3FA7A0',
+    look: {
+      skin: 'tan',
+      hair: 'long',
+      hair_color: 'hair-black',
+      eyes: 'bark',
+      top: 'cloth-orange',
+      bottom: 'cloth-navy',
+      shoes: 'bark',
+      accessory: 'none',
+    },
   },
   {
     callsign: 'ENG',
@@ -493,6 +596,16 @@ export const ROLES: readonly Role[] = [
     report: 'Uptime 100%, one warning filed, one restart proposed and queued for the Mayor.',
     desk_style: 'engineer-desk-graph-wall',
     palette_accent: '#7C9A5E',
+    look: {
+      skin: 'fair',
+      hair: 'curly',
+      hair_color: 'hair-red',
+      eyes: 'moss',
+      top: 'cloth-green',
+      bottom: 'cloth-brown',
+      shoes: 'bark-dark',
+      accessory: 'glasses',
+    },
   },
   {
     callsign: 'OPS',
@@ -540,6 +653,16 @@ export const ROLES: readonly Role[] = [
     report: 'Twelve fills confirmed, cash and positions reconciled, one break resolved.',
     desk_style: 'ops-desk-ledger',
     palette_accent: '#A8865C',
+    look: {
+      skin: 'tan',
+      hair: 'bob',
+      hair_color: 'hair-brown',
+      eyes: 'bark',
+      top: 'cloth-cream',
+      bottom: 'cloth-plum',
+      shoes: 'ink',
+      accessory: 'headset',
+    },
   },
   {
     callsign: 'ACCT',
@@ -586,6 +709,16 @@ export const ROLES: readonly Role[] = [
     report: 'P&L booked, fees reconciled, AI payroll posted per agent, statement issued.',
     desk_style: 'accounting-desk-adding-machine',
     palette_accent: '#5E7F4A',
+    look: {
+      skin: 'fair',
+      hair: 'balding',
+      hair_color: 'hair-white',
+      eyes: 'slate',
+      top: 'cloth-tan',
+      bottom: 'cloth-brown',
+      shoes: 'bark-dark',
+      accessory: 'glasses',
+    },
   },
 ];
 

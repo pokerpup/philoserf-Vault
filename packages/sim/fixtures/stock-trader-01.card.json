@@ -96,11 +96,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/stock-trader-01.png",
+          "sprite": "characters:stock-trader-01",
           "desk_style": "trading-desk-3-monitors",
           "palette_accent": "#D9A441",
-          "layers": null
+          "layers": {
+            "skin": "fair",
+            "hair": "crop",
+            "hair_color": "hair-chestnut",
+            "eyes": "moss",
+            "top": "cloth-wine",
+            "bottom": "cloth-charcoal",
+            "shoes": "bark-dark",
+            "accessory": "tie"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

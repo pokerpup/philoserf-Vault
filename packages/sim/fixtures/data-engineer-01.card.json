@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/data-engineer-01.png",
+          "sprite": "characters:data-engineer-01",
           "desk_style": "data-desk-two-laptops",
           "palette_accent": "#3FA7A0",
-          "layers": null
+          "layers": {
+            "skin": "tan",
+            "hair": "long",
+            "hair_color": "hair-black",
+            "eyes": "bark",
+            "top": "cloth-orange",
+            "bottom": "cloth-navy",
+            "shoes": "bark",
+            "accessory": "none"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",

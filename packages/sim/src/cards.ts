@@ -92,11 +92,11 @@ export function cardForRole(r: Role): Card {
           },
           metrics: [{ key: r.metric.key, label: r.metric.label, type: r.metric.type }],
           visual: {
-            portrait: null,
-            sprite: null,
+            portrait: `assets/tallyford/portraits/${r.id}.png`,
+            sprite: `characters:${r.id}`,
             desk_style: r.desk_style,
             palette_accent: r.palette_accent,
-            layers: null,
+            layers: { ...r.look },
           },
           voice: {
             comment_style: 'smart-quip',

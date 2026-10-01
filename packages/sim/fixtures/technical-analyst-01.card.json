@@ -86,11 +86,20 @@
           }
         ],
         "visual": {
-          "portrait": null,
-          "sprite": null,
+          "portrait": "assets/tallyford/portraits/technical-analyst-01.png",
+          "sprite": "characters:technical-analyst-01",
           "desk_style": "chart-desk-ruler",
           "palette_accent": "#4FA38A",
-          "layers": null
+          "layers": {
+            "skin": "tan",
+            "hair": "bob",
+            "hair_color": "hair-black",
+            "eyes": "bark",
+            "top": "cloth-red",
+            "bottom": "cloth-navy",
+            "shoes": "ink",
+            "accessory": "none"
+          }
         },
         "voice": {
           "comment_style": "smart-quip",
