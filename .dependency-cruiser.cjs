@@ -7,7 +7,8 @@ module.exports = {
         'PROMPT.md §3.5 and §6.7: apps/town-server/game/**, packages/game-*/** and apps/town-client/src/game/** have no import path to gateway/** or mayor/policy/**.',
       severity: 'error',
       from: { path: '^(packages/game-[^/]+/|apps/town-server/game/|apps/town-client/src/game/)' },
-      to: { path: '^apps/town-server/(gateway|mayor/policy)/' },
+      // reachable: the rule is about any import *path*, so a route through events/ or a package fails too.
+      to: { path: '^apps/town-server/(gateway|mayor/policy)/', reachable: true },
     },
     {
       name: 'client-never-imports-server',

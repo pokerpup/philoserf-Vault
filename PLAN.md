@@ -50,7 +50,8 @@ If your real roster differs (two traders, no data engineer, a second compliance 
 3. **Persistence is in memory.** Drizzle + SQLite are deferred until Phase 1 needs an event store; the save envelope (`packages/save-migrations` v1) exists so the schema has a home.
 4. **`sim:year` and `sim:vault` are stubs** printing the §10 and RPG.md §11 table shapes; the economy lands in Phase 6, the Vault in Phase 10.
 5. **Ember Vine.** The §10 ₥/day column for Ember Vine (19.6) does not follow the formula every other crop follows (`packages/game-core/test/economy.test.ts` pins the discrepancy). A designer call for Phase 6.
-6. **`apps/town-server/gateway/` and `mayor/policy/`** are not created: both are deny-listed for edits in game sessions, so their own phase sessions create them with your go-ahead.
+6. **The §10 crop table is structurally close to the reference game's.** The guardrail audit noted that several rows (seed, sell, days, regrow) line up with that game's crop table one for one under original names. The working agreement allows structure and forbids names, text, art and music, so this is yours to judge; no number was changed. If you want distance, the Phase 6 designer session retunes the table against the §10 income targets.
+7. **`apps/town-server/gateway/` and `mayor/policy/`** are not created: both are deny-listed for edits in game sessions, so their own phase sessions create them with your go-ahead.
 
 ## 5. Order of work, Phases 1–4
 
@@ -65,3 +66,4 @@ If your real roster differs (two traders, no data engineer, a second compliance 
 2. Fastify was chosen over Hono (reason in `DECISIONS.md`). Keep it?
 3. Ports 3000 (client) and 3001 (server) are reserved. Keep them?
 4. Is the department mapping in §3 right for your real roster?
+5. Keep the §10 crop numbers as they are, or retune them away from the reference game's table in Phase 6?

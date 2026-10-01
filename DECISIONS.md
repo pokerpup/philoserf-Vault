@@ -35,6 +35,7 @@ Session date 2026-10-01. The three BUILD questions ("ask me before building") we
 - **Market hours** (`packages/game-data/time.json`): 09:30–16:00 America/New_York, weekdays, as the "firm's windows glow" window of §7.3.1. A display rule only; nothing real reads it.
 - **Ember Vine**: the §10 ₥/day column (19.6) equals 550 ÷ 28 and ignores the 600 ₥ seed and regrowth; every other crop matches the formula in `packages/game-core/src/economy.ts` to one decimal. The test pins the mismatch; the designer decides in Phase 6.
 - **`config/bridge.yaml` and `config/evolution.yaml`** were created from §7.4 and §7.1 verbatim with `rate: 0`. Both are on the settings "ask" list; they carry the spec's own numbers and nothing else, and are flagged here for your sign-off.
+- **Guardrail audit fixes** (the `guardrail-reviewer` subagent, run before the Phase 0 push): the wall rule is now `reachable: true`, so an import *path* through `events/` or another package fails like a direct import, with a transitive case in the test; `apps/town-client/vite.config.ts` sets `envDir: false` so Vite never loads a `.env*` file from the client folder.
 - **The depcruise proof** is a Vitest test (`scripts/depcruise-wall.test.ts`) that builds a throwaway tree with one bad import from `game-core` into `mayor/policy` and one from `apps/town-server/game` into `gateway`, asserts the rule fires, removes them, asserts clean. The repo never carries the bad import.
 
 ## Phase 1 — MVP town

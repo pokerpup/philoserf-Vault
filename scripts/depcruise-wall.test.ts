@@ -43,6 +43,22 @@ describe('§3.5 dependency wall', () => {
     expect((await violations()).filter((v) => v.rule.name === RULE)).toEqual([]);
   });
 
+  it('fails a transitive route too: game-core → events/ → gateway', async () => {
+    write(
+      'apps/town-server/events/leak.ts',
+      "import { gateway } from '../gateway/client.ts';\nexport const leak = gateway;\n",
+    );
+    write(
+      'packages/game-core/src/indirect.ts',
+      "import { leak } from '../../../apps/town-server/events/leak.ts';\nexport const no = leak;\n",
+    );
+    const bad = (await violations()).filter((v) => v.rule.name === RULE);
+    expect(bad.map((v) => v.from)).toEqual(['packages/game-core/src/indirect.ts']);
+    rmSync(join(base, 'apps/town-server/events/leak.ts'));
+    rmSync(join(base, 'packages/game-core/src/indirect.ts'));
+    expect((await violations()).filter((v) => v.rule.name === RULE)).toEqual([]);
+  });
+
   it('fails a game-core import of mayor/policy and a server game import of gateway, then is clean once removed', async () => {
     write(
       'packages/game-core/src/bad.ts',
