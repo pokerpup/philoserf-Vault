@@ -1,0 +1,19 @@
+{
+  "name": "@agent-town/schema",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "gen": "tsx scripts/gen-json-schema.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  }
+}

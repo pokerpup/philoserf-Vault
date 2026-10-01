@@ -1,0 +1,502 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "spec": {
+      "type": "string",
+      "const": "chara_card_v2"
+    },
+    "spec_version": {
+      "type": "string",
+      "const": "2.0"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "default": "",
+          "type": "string"
+        },
+        "personality": {
+          "default": "",
+          "type": "string"
+        },
+        "scenario": {
+          "default": "",
+          "type": "string"
+        },
+        "first_mes": {
+          "default": "",
+          "type": "string"
+        },
+        "mes_example": {
+          "default": "",
+          "type": "string"
+        },
+        "creator_notes": {
+          "default": "",
+          "type": "string"
+        },
+        "system_prompt": {
+          "default": "",
+          "type": "string"
+        },
+        "post_history_instructions": {
+          "default": "",
+          "type": "string"
+        },
+        "alternate_greetings": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "creator": {
+          "default": "",
+          "type": "string"
+        },
+        "character_version": {
+          "default": "",
+          "type": "string"
+        },
+        "extensions": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "agent_town": {
+              "type": "object",
+              "properties": {
+                "schema_version": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "agent",
+                    "npc",
+                    "resident",
+                    "mayor",
+                    "player"
+                  ]
+                },
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+                },
+                "task_role": {
+                  "type": "string"
+                },
+                "business": {
+                  "type": "string"
+                },
+                "department": {
+                  "type": "string",
+                  "enum": [
+                    "front-office",
+                    "middle-office",
+                    "back-office"
+                  ]
+                },
+                "reports_to": {
+                  "default": "mayor",
+                  "type": "string"
+                },
+                "model": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "intelligence_tier": {
+                      "type": "string",
+                      "enum": [
+                        "low",
+                        "medium",
+                        "high"
+                      ]
+                    },
+                    "runs_on": {
+                      "type": "string",
+                      "enum": [
+                        "hosted",
+                        "local"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "name"
+                  ],
+                  "additionalProperties": {}
+                },
+                "risk_profile": {
+                  "type": "string"
+                },
+                "stake": {
+                  "type": "object",
+                  "properties": {
+                    "allocation_pct": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "hard_cap_pct": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "allocation_pct",
+                    "hard_cap_pct",
+                    "currency"
+                  ],
+                  "additionalProperties": {}
+                },
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "max_position_pct_of_allocation": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "max_daily_loss_pct_of_allocation": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "max_drawdown_pct_of_allocation": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "max_orders_per_hour": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "cooldown_after_loss_streak": {
+                      "type": "object",
+                      "properties": {
+                        "losses": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "minutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "losses",
+                        "minutes"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "permissions": {
+                  "type": "object",
+                  "properties": {
+                    "auto": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "needs_mayor": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "needs_user": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "forbidden": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "auto",
+                    "needs_mayor",
+                    "needs_user",
+                    "forbidden"
+                  ],
+                  "additionalProperties": {}
+                },
+                "reporting": {
+                  "type": "object",
+                  "properties": {
+                    "heartbeat_sec": {
+                      "default": 15,
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "status_report": {
+                      "type": "string"
+                    },
+                    "daily_summary": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "heartbeat_sec"
+                  ],
+                  "additionalProperties": {}
+                },
+                "endpoint": {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string",
+                      "enum": [
+                        "a2a",
+                        "webhook"
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "auth": {
+                      "type": "string",
+                      "pattern": "^(bearer|mtls):env:[A-Z0-9_]+$"
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "url",
+                    "auth"
+                  ],
+                  "additionalProperties": {}
+                },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "currency",
+                          "percent",
+                          "count",
+                          "number"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": {}
+                  }
+                },
+                "visual": {
+                  "type": "object",
+                  "properties": {
+                    "portrait": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sprite": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "desk_style": {
+                      "type": "string"
+                    },
+                    "palette_accent": {
+                      "type": "string",
+                      "pattern": "^#[0-9a-fA-F]{6}$"
+                    },
+                    "layers": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {}
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "voice": {
+                  "type": "object",
+                  "properties": {
+                    "comment_style": {
+                      "type": "string"
+                    },
+                    "comment_frequency": {
+                      "type": "string"
+                    },
+                    "catchphrases": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "tts_voice_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "catchphrases"
+                  ],
+                  "additionalProperties": {}
+                },
+                "lore": {
+                  "type": "object",
+                  "properties": {
+                    "origin": {
+                      "default": null,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "joined": {
+                      "default": null,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "skills": {
+                      "default": {},
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    },
+                    "trust_hearts": {
+                      "default": {},
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    },
+                    "quests_done": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "memories": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "origin",
+                    "joined",
+                    "skills",
+                    "trust_hearts",
+                    "quests_done",
+                    "memories"
+                  ],
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "schema_version",
+                "kind",
+                "id",
+                "reports_to"
+              ],
+              "additionalProperties": {}
+            }
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "personality",
+        "scenario",
+        "first_mes",
+        "mes_example",
+        "creator_notes",
+        "system_prompt",
+        "post_history_instructions",
+        "alternate_greetings",
+        "tags",
+        "creator",
+        "character_version",
+        "extensions"
+      ],
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "spec",
+    "spec_version",
+    "data"
+  ],
+  "additionalProperties": {}
+}
