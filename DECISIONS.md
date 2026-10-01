@@ -16,7 +16,26 @@ Every default a session chose and why (PROMPT.md §0, working rule 6), newest en
 
 ## Phase 0 — Discover and scaffold (no product code)
 
-_Nothing yet._
+Session date 2026-10-01. The three BUILD questions ("ask me before building") were answered with defaults because the session ran unattended; they are open questions in `PLAN.md` §6.
+
+- **No agent repo found** in the workspace; `PLAN.md` §2 is written against the §5 contracts and marked unverified.
+- **Fastify 5** over Hono: `reply.hijack()` gives a plain Node response for SSE, the plugin model fits the §3 server modules, and the §3 text names it first. Hono stays possible behind the same `buildApp()` boundary.
+- **Ports 3000 (client) and 3001 (server)**, loopback only; Vite proxies `/api` so the browser sees one origin and `EventSource` needs no CORS. Override with `TOWN_SERVER_PORT` / `TOWN_SERVER_HOST`.
+- **Server modules sit directly under `apps/town-server/`** (`game/`, `events/`, `registry/`, …) with no `src/`, exactly as §3 draws them, so the settings deny rules, the PostToolUse hook and the dependency-cruiser rule all name the same paths. `gateway/` and `mayor/policy/` are not created in Phase 0: they are deny-listed for edits in game sessions, so Phase 1 and Phase 2 create them.
+- **Phaser scale: `Scale.NONE` plus an explicit integer `zoom`**, recomputed on resize (`integerZoom()` in `apps/town-client/src/game/zoom.ts`). `Scale.FIT` picks a fractional factor and fights a later `setZoom`, so the integer is given to the manager directly; the letterbox is the parent's CSS centring. This is the §4.2 "FIT with an integer override" in effect.
+- **Tiled JSON** over LDtk: Phaser loads it natively (`tilemapTiledJSON`), the spec names it, and the generator writes it without a tool. Map `apps/town-client/public/assets/placeholder/town.json`, 96×64, layers `ground`, `buildings`, object layer `zones` carrying the §7.5 names and unlock text.
+- **Generated placeholder tileset** instead of Kenney Tiny Town: the container denies downloads (`curl`/`wget`), so `scripts/gen-placeholders.ts` draws 16 flat-colour tiles from `art/palette.gpl`. It is a stand-in, recorded in `art/provenance.json`, not original art; `assets/third_party/README.md` has the swap.
+- **`art/palette.gpl` is provisional**: 48 warm colours chosen so `art:qa` can enforce the palette rule from day one. The art phase replaces the values, not the rule.
+- **Persistence deferred**: no Drizzle/SQLite in Phase 0 (nothing to store). The save envelope is `packages/save-migrations` v1 (`created_at`, `spring_one`, `town_seed`, `sim`); the dev server holds a `sim: true` save in memory with seed 42.
+- **TypeScript 5.9**, not 7.0: typescript-eslint 8.x does not support TS 7 yet. **Vitest 5**, **Playwright 1.63**, **Zod 4** (`z.toJSONSchema` generates the committed JSON Schemas), **ESLint 10** flat config, **Prettier 3** (`singleQuote`, `printWidth` 100), **dependency-cruiser 18**.
+- **Dependencies added** (CLAUDE.md asks before adding; listed for your review): phaser, react, react-dom, vite, @vitejs/plugin-react, fastify, zod, yaml, ajv, ajv-formats, vitest, @playwright/test, typescript, typescript-eslint, eslint, @eslint/js, eslint-plugin-react-hooks, globals, prettier, dependency-cruiser, tsx, concurrently, pngjs, @types/node, @types/react, @types/react-dom, @types/pngjs. All MIT or Apache-2.0; nothing needs an account.
+- **Prettier is never run on prose or on verbatim files**: `.prettierignore` lists `*.md`, `docs/spec/**`, `.claude/**` and the generated JSON. Code is formatted; `pnpm format:check` is green.
+- **Fixtures are committed** (`packages/sim/fixtures/*.card.json`, from `pnpm sim:fixtures`) so `pnpm dev` and the tests need no generation step; a test keeps them in sync with `roles.ts`.
+- **JSON Schemas are generated from Zod** (`packages/schema/json/`, `packages/game-data/schemas/`) and committed; `pnpm data:lint` validates with Ajv so the PostToolUse hook needs no TypeScript. Tests fail if a committed schema drifts from its Zod source.
+- **Market hours** (`packages/game-data/time.json`): 09:30–16:00 America/New_York, weekdays, as the "firm's windows glow" window of §7.3.1. A display rule only; nothing real reads it.
+- **Ember Vine**: the §10 ₥/day column (19.6) equals 550 ÷ 28 and ignores the 600 ₥ seed and regrowth; every other crop matches the formula in `packages/game-core/src/economy.ts` to one decimal. The test pins the mismatch; the designer decides in Phase 6.
+- **`config/bridge.yaml` and `config/evolution.yaml`** were created from §7.4 and §7.1 verbatim with `rate: 0`. Both are on the settings "ask" list; they carry the spec's own numbers and nothing else, and are flagged here for your sign-off.
+- **The depcruise proof** is a Vitest test (`scripts/depcruise-wall.test.ts`) that builds a throwaway tree with one bad import from `game-core` into `mayor/policy` and one from `apps/town-server/game` into `gateway`, asserts the rule fires, removes them, asserts clean. The repo never carries the bad import.
 
 ## Phase 1 — MVP town
 

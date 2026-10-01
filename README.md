@@ -14,7 +14,27 @@ A web app where a firm of AI agents lives in one shared pixel-art town, Tallyfor
 
 Session 0, this scaffolding, is done. For each phase: `/clear`, create the branch named in the prompt header, paste `docs/spec/phases/phase-N.prompt.md` in plan mode, approve the plan once it quotes every acceptance criterion and names the failing test for each, build one criterion at a time, walk `VERIFY.md` by hand, merge. `docs/spec/phases/README.md` has the details.
 
-Phase 0's definition of done expands this file: adding an agent in one file, connecting a remote or local agent, the art pipeline, the kill switch, creating, hiring and awakening a resident, the farm loop, the bridge settings and Sim Season.
+## Run it
+
+Node 22 and pnpm 10 (`corepack enable`).
+
+```sh
+pnpm install
+pnpm dev            # Town Server on :3001, client on :3000, the mock fleet, bridge rate 0
+pnpm test           # Vitest
+pnpm test:e2e       # Playwright against pnpm dev
+pnpm lint && pnpm typecheck && pnpm format:check
+pnpm data:lint      # packages/game-data and config/*.yaml against their JSON Schemas
+pnpm art:qa         # grid, palette and provenance of every image
+pnpm depcruise      # the dependency wall: game code never imports gateway or mayor/policy
+pnpm sim            # stream 30 s of mock-fleet events as JSON lines (--seconds, --seed)
+pnpm sim:year       # 365-day economy run (stub until Phase 6)
+pnpm placeholders   # regenerate the placeholder tileset and map
+```
+
+Layout: `apps/town-client` (Phaser 4 + React 19 + Vite), `apps/town-server` (Fastify), `packages/schema` (Zod + generated JSON Schema), `adapter-sdk` (signed events in ten lines), `sim` (the mock fleet and its fixtures), `game-data` (tables), `game-core` (pure rules), `save-migrations`. `PLAN.md` maps the twelve agents to the firm and lists the open questions.
+
+Later phases expand this file: adding an agent in one file, connecting a remote or local agent, the art pipeline, the kill switch, creating, hiring and awakening a resident, the farm loop, the bridge settings and Sim Season.
 
 ## Licence
 
