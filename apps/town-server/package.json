@@ -1,0 +1,21 @@
+{
+  "name": "@agent-town/town-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false main.ts",
+    "start": "tsx main.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agent-town/game-core": "workspace:*",
+    "@agent-town/game-data": "workspace:*",
+    "@agent-town/save-migrations": "workspace:*",
+    "@agent-town/schema": "workspace:*",
+    "@agent-town/sim": "workspace:*",
+    "fastify": "^5.12.5",
+    "yaml": "^2.8.0",
+    "zod": "^4.6.5"
+  }
+}
