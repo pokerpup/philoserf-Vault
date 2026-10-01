@@ -1,0 +1,6 @@
+# PROMPT.md §7.4 — Marks minted from the real side. Every value is a cap on in-game Marks.
+# rate 0 runs the game with no real link at all; pnpm dev always runs this way (CLAUDE.md).
+rate: 0
+dividend_cap_per_day: 2000
+task_credit_cap_per_agent_per_day: 500
+loss_day_mints: 0

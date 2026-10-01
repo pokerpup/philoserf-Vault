@@ -1,0 +1,20 @@
+# PROMPT.md §7.1 — Town Level from real metrics. Starting numbers, not benchmarks.
+# Real metrics gate eligibility only; Marks pay for construction (§6.7.3). Downturns never demolish (§7.1.5).
+town_levels:
+  - { level: 1, name: Hamlet, require: all }
+  - { level: 2, name: Village, min_agents: 15, min_revenue_usd: 10000, require: any }
+  - {
+      level: 3,
+      name: Town,
+      min_agents: 25,
+      min_revenue_usd: 50000,
+      min_uptime_pct: 95,
+      require: all,
+    }
+  - { level: 4, name: Market Town, min_revenue_usd: 250000, min_success_pct: 90, require: all }
+  - { level: 5, name: City, min_revenue_usd: 1000000, require: all }
+building_tiers:
+  tier2_needs_positive_pnl_days: 30
+downturn:
+  demolish: false
+  soup_after_losing_days: 10
