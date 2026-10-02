@@ -3,10 +3,11 @@
   "map": {
     "width": 96,
     "height": 64,
-    "tiles": 493,
-    "water_tiles": 5,
-    "lights": 48,
-    "spawns": 12
+    "tiles": 560,
+    "water_tiles": 18,
+    "lights": 69,
+    "spawns": 12,
+    "smoke": 7
   },
   "people": 12,
   "seasons": [
