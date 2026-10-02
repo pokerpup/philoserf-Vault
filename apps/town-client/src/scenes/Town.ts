@@ -2,11 +2,16 @@ import type { AgentEvent, AgentSummary, ClockSummary } from '@agent-town/schema'
 import Phaser, { Scene } from 'phaser';
 import { Actor } from '../game/town/Actor.ts';
 import {
+  CAMERA_LERP,
   CAMERA_PAN_SPEED,
   DEPTH,
   FIRM_GLOW_ALPHA,
   NIGHT,
   SEASONS,
+  SMOKE_ALPHA,
+  SMOKE_FPS,
+  SMOKE_RISE_MS,
+  SMOKE_RISE_PX,
   TILESET_NAME,
   WATER_FRAME_MS,
 } from '../game/config.ts';
@@ -28,7 +33,8 @@ interface TiledObject {
 export class Town extends Scene {
   private season: Season = 'spring';
   private waterLayer?: Phaser.Tilemaps.TilemapLayer;
-  private waterSwap: [number, number][] = [];
+  private waterCycle = new Map<number, number>();
+  private camTarget: { x: number; y: number } | null = null;
   private waterTimer = 0;
   private actors = new Map<string, Actor>();
   private spawns: Phaser.Math.Vector2[] = [];
@@ -63,27 +69,26 @@ export class Town extends Scene {
     layer('objects', DEPTH.objects);
     layer('buildings', DEPTH.buildings);
     layer('above', DEPTH.above);
-    const swap = map.properties as { name: string; value: string }[] | undefined;
-    const swapProp = Array.isArray(swap) ? swap.find((p) => p.name === 'waterSwap') : undefined;
-    this.waterSwap = swapProp
-      ? Object.entries(JSON.parse(swapProp.value) as Record<string, number>).map(([a, b]) => [
-          Number(a),
-          b,
-        ])
-      : [];
+    const props = map.properties as { name: string; value: string }[] | undefined;
+    const cycle = Array.isArray(props) ? props.find((p) => p.name === 'waterCycle') : undefined;
+    if (cycle)
+      for (const [a, b] of Object.entries(JSON.parse(cycle.value) as Record<string, number>))
+        this.waterCycle.set(Number(a), b);
 
     // zones: a label in the pixel font on a dark plate
     for (const o of (map.getObjectLayer('zones')?.objects ?? []) as TiledObject[]) {
       const unlock = o.properties?.find((p) => p.name === 'unlock')?.value;
-      const text =
-        unlock === 'Start' || typeof unlock !== 'string' ? (o.name ?? '') : `${o.name} (${unlock})`;
-      const label = this.add
-        .bitmapText((o.x ?? 0) + 4, (o.y ?? 0) + 3, 'tally', text.toUpperCase())
-        .setDepth(DEPTH.labels);
+      const text = (
+        unlock === 'Start' || typeof unlock !== 'string' ? (o.name ?? '') : `${o.name} (${unlock})`
+      ).toUpperCase();
+      const x = (o.x ?? 0) + 5;
+      const y = (o.y ?? 0) + 4;
+      const label = this.add.bitmapText(x, y, 'tally', text).setDepth(DEPTH.labels);
+      this.add.bitmapText(x + 1, y + 1, 'tally-ink', text).setDepth(DEPTH.labels - 1);
       this.add
-        .rectangle((o.x ?? 0) + 2, (o.y ?? 0) + 1, label.width + 5, 11, 0x15121c, 0.7)
+        .rectangle(x - 3, y - 3, label.width + 8, 13, 0x15121c, 0.55)
         .setOrigin(0, 0)
-        .setDepth(DEPTH.labels - 1);
+        .setDepth(DEPTH.labels - 2);
     }
     // spawns and the wander rectangle for the firm's agents
     for (const o of (map.getObjectLayer('spawns')?.objects ?? []) as TiledObject[]) {
@@ -103,6 +108,31 @@ export class Town extends Scene {
       else sprite.setScale(0.7);
       this.glows.push({ sprite, kind });
     }
+    // chimney smoke: three frames looping, drifting up and fading, then starting again
+    if (!this.anims.exists('smoke'))
+      this.anims.create({
+        key: 'smoke',
+        frames: [0, 1, 2].map((i) => ({ key: 'ui', frame: `smoke-${i}` })),
+        frameRate: SMOKE_FPS,
+        repeat: -1,
+      });
+    for (const o of (map.getObjectLayer('smoke')?.objects ?? []) as TiledObject[]) {
+      const puff = this.add
+        .sprite(o.x ?? 0, o.y ?? 0, 'ui', 'smoke-0')
+        .setOrigin(0.5, 1)
+        .setDepth(DEPTH.above + 1)
+        .setAlpha(SMOKE_ALPHA[0]);
+      puff.play('smoke');
+      this.tweens.add({
+        targets: puff,
+        y: (o.y ?? 0) - SMOKE_RISE_PX,
+        alpha: SMOKE_ALPHA[1],
+        duration: SMOKE_RISE_MS,
+        repeat: -1,
+        yoyo: false,
+        ease: 'Sine.easeOut',
+      });
+    }
     this.night = this.add
       .rectangle(0, 0, this.scale.width, this.scale.height, NIGHT.color, 0)
       .setOrigin(0, 0)
@@ -112,7 +142,7 @@ export class Town extends Scene {
     const cam = this.cameras.main;
     cam.setRoundPixels(true);
     cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    cam.centerOn(this.wander.centerX, this.wander.centerY - 20);
+    cam.centerOn(this.wander.centerX, this.wander.centerY - 4);
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys('W,A,S,D') as typeof this.wasd;
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
@@ -121,8 +151,10 @@ export class Town extends Scene {
     this.input.on('pointerup', () => (this.dragFrom = null));
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
       if (!this.dragFrom || !p.isDown) return;
-      cam.scrollX = this.dragFrom.sx - (p.x - this.dragFrom.x) / cam.zoom;
-      cam.scrollY = this.dragFrom.sy - (p.y - this.dragFrom.y) / cam.zoom;
+      this.camTarget = {
+        x: this.dragFrom.sx - (p.x - this.dragFrom.x) / cam.zoom,
+        y: this.dragFrom.sy - (p.y - this.dragFrom.y) / cam.zoom,
+      };
     });
 
     EventBus.on('agents', this.onAgents, this);
@@ -179,18 +211,29 @@ export class Town extends Scene {
 
   override update(time: number, delta: number) {
     this.waterTimer += delta;
-    if (this.waterTimer >= WATER_FRAME_MS && this.waterLayer) {
+    if (this.waterTimer >= WATER_FRAME_MS && this.waterLayer && this.waterCycle.size) {
       this.waterTimer = 0;
-      for (const [a, b] of this.waterSwap) this.waterLayer.swapByIndex(a, b);
+      const cycle = this.waterCycle;
+      this.waterLayer.forEachTile((tile) => {
+        const next = cycle.get(tile.index);
+        if (next !== undefined) tile.index = next;
+      });
     }
     for (const a of this.actors.values()) a.update(time, delta);
+    for (const a of this.actors.values()) a.separate(this.actors.values());
     const cam = this.cameras.main;
     const step = (CAMERA_PAN_SPEED * delta) / 1000;
     const k = this.cursors;
     const w = this.wasd;
-    if (k?.left.isDown || w?.A.isDown) cam.scrollX -= step;
-    if (k?.right.isDown || w?.D.isDown) cam.scrollX += step;
-    if (k?.up.isDown || w?.W.isDown) cam.scrollY -= step;
-    if (k?.down.isDown || w?.S.isDown) cam.scrollY += step;
+    const target = this.camTarget ?? { x: cam.scrollX, y: cam.scrollY };
+    if (k?.left.isDown || w?.A.isDown) target.x -= step;
+    if (k?.right.isDown || w?.D.isDown) target.x += step;
+    if (k?.up.isDown || w?.W.isDown) target.y -= step;
+    if (k?.down.isDown || w?.S.isDown) target.y += step;
+    this.camTarget = target;
+    cam.scrollX += (target.x - cam.scrollX) * CAMERA_LERP;
+    cam.scrollY += (target.y - cam.scrollY) * CAMERA_LERP;
+    if (Math.abs(target.x - cam.scrollX) < 0.3) cam.scrollX = target.x;
+    if (Math.abs(target.y - cam.scrollY) < 0.3) cam.scrollY = target.y;
   }
 }

@@ -54,6 +54,21 @@ The owner asked for the graphics to be built out to match the reference game, in
 - **`art:qa` grew** the §4.7 checks that art now exists for: orphan pixels and silhouettes touching the cell edge on the character atlas, expression deltas on portrait strips, and every PNG under the client's assets. Light direction and crop-stage checks still wait for the art phase.
 - **Not done**: Kenney tiles are no longer needed and `assets/third_party/README.md` now says so; the Mayor, the Founder and residents have no sprites yet (their phases); no walk cycles beyond the twelve agents; no interiors; no weather.
 
+### Graphics quality pass (same session)
+
+The owner judged the first pass still short of the bar: detailed, elegant, smooth, high-end. The second pass raised detail density and shading depth in every family rather than patching pieces; the originality rule is unchanged, every picture is still ours.
+
+- **Ground**: eight grass variants with a dense low-contrast blade texture plus rare decals (clover, pebbles, a bare patch); pebbled dirt; cobbles as irregular packed stones with lit corners and shaded feet, mossy in the old courtyard; water in three frames with a periodic depth band and sliding crests.
+- **Trees**: 48×80 oaks from eleven overlapping clumps with leaf speckle and clump-edge shading, jagged four-tier pines, orchard trees with two-pixel fruit, trimmed hedges by connection mask, a generated trunk with bark lines and a flared root.
+- **Buildings, second kit**: scalloped shingles with per-shingle tone variation, a half-tile roof overhang on each side with the roof's own outline, a lit fascia board and its underside at the eave, a three-row eave shadow on the wall, corner boards, a baseboard and stone footing; four-pane windows with chunky two-tone mullions, a lintel and a sill that shadows the wall, curtains on homes; panelled doors with a lintel, brass knob, kick plate and doorstep; wall lanterns flanking lit doors (night lights); a plank porch and a soft ground shadow along every wall; smoke points at chimneys.
+- **People**: a fifth frame per direction, the standing pose settled one pixel lower, so a standing agent breathes instead of freezing.
+- **Portraits**: a vignette behind the bust, a jacket with lapels over a lighter shirt, 9×6 eyes with a winged lash line, two-tone iris and glint, tapered two-pixel brows, two-tone lips, a lit nose tip, blush, highlight arcs and dark strands over the hair cap.
+- **HUD**: the panel's field is dark leather with a bevel inside the bark frame, so cream text keeps its contrast with the plank border still showing; the bubble is parchment with an inner rule and a drop shadow.
+- **Scene**: three-frame water via a gid cycle, chimney smoke sprites looping upward, idle-breathe animations, camera easing toward a target (keys and drag), a one-pixel-per-frame separation nudge so agents do not stack, label drop shadows, name tags on hover only.
+- **Map**: hedges and planters round the forecourt, lamps along the main road, planters in the square, a mossy exchange courtyard, the farm plot split into four beds by a path with two beds watered and a scarecrow, a wagon at the ranch, crates and a bench at the docks.
+- **Build**: `pnpm art:build` now writes in place and prunes stale files instead of recreating the folder, because a running Vite dev server loses track of a public folder that is deleted under it (it served index.html for every asset until restarted).
+- **Open**: the ford's sand still reads as a plain beach; autotile inner corners, an east-facing cliff face and snow caps remain for the art phase; the painted-portrait bar of the reference is still above these composed busts.
+
 ## Phase 1 — MVP town
 
 _Nothing yet._

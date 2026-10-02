@@ -1,13 +1,17 @@
 import type { AgentState, AgentSummary } from '@agent-town/schema';
 import Phaser from 'phaser';
 import {
+  ACTOR_PUSH,
+  ACTOR_SPACING_PX,
   BUBBLE_LINE_CHARS,
   BUBBLE_MAX_LINES,
   BUBBLE_MS,
   DEPTH,
   EMOTE_MS,
+  IDLE_FPS,
   WALK_FPS,
   WALK_SPEED,
+  WANDER_INSET,
   WANDER_PAUSE_MS,
 } from '../config.ts';
 import { wrapBubble } from '../state.ts';
@@ -18,6 +22,7 @@ type Dir = 'down' | 'up' | 'left' | 'right';
 export class Actor {
   readonly sprite: Phaser.GameObjects.Sprite;
   private readonly label: Phaser.GameObjects.BitmapText;
+  private readonly labelShadow: Phaser.GameObjects.BitmapText;
   private readonly labelBack: Phaser.GameObjects.Rectangle;
   private bubble?: Phaser.GameObjects.Container;
   private bubbleUntil = 0;
@@ -63,6 +68,17 @@ export class Actor {
           frameRate: WALK_FPS,
           repeat: -1,
         });
+      const idle = `${id}-idle-${d}`;
+      if (!scene.anims.exists(idle))
+        scene.anims.create({
+          key: idle,
+          frames: [
+            { key: 'characters', frame: `${id}/${d}/0` },
+            { key: 'characters', frame: `${id}/${d}/4` },
+          ],
+          frameRate: IDLE_FPS,
+          repeat: -1,
+        });
     }
     // the callsign tag shows on hover, so a crowd on the forecourt stays readable
     this.label = scene.add
@@ -70,10 +86,15 @@ export class Actor {
       .setOrigin(0.5, 1)
       .setDepth(DEPTH.labels)
       .setVisible(false);
-    this.labelBack = scene.add
-      .rectangle(home.x, home.y - 37, this.label.width + 4, 9, 0x15121c, 0.75)
-      .setOrigin(0.5, 0.5)
+    this.labelShadow = scene.add
+      .bitmapText(home.x + 1, home.y - 33, 'tally-ink', summary.callsign)
+      .setOrigin(0.5, 1)
       .setDepth(DEPTH.labels - 1)
+      .setVisible(false);
+    this.labelBack = scene.add
+      .rectangle(home.x, home.y - 37, this.label.width + 6, 11, 0x15121c, 0.6)
+      .setOrigin(0.5, 0.5)
+      .setDepth(DEPTH.labels - 2)
       .setVisible(false);
     this.sprite.setInteractive({ useHandCursor: true });
     this.sprite.on('pointerover', () => this.setTag(true));
@@ -84,6 +105,7 @@ export class Actor {
 
   setTag(on: boolean): void {
     this.label.setVisible(on);
+    this.labelShadow.setVisible(on);
     this.labelBack.setVisible(on);
   }
 
@@ -146,8 +168,8 @@ export class Actor {
     const cx = this.home.x + (this.rng() - 0.5) * r.width * spread;
     const cy = this.home.y + (this.rng() - 0.5) * r.height * spread;
     this.target = new Phaser.Math.Vector2(
-      Phaser.Math.Clamp(cx, r.left + 8, r.right - 8),
-      Phaser.Math.Clamp(cy, r.top + 24, r.bottom - 2),
+      Phaser.Math.Clamp(cx, r.left + WANDER_INSET.side, r.right - WANDER_INSET.side),
+      Phaser.Math.Clamp(cy, r.top + WANDER_INSET.top, r.bottom - WANDER_INSET.bottom),
     );
   }
 
@@ -163,9 +185,9 @@ export class Actor {
     const canWalk = this.online && (this.state === 'working' || this.state === 'idle');
     if (!canWalk) {
       this.target = null;
-      this.sprite.anims.stop();
-      this.sprite.setFrame(`${this.id}/${this.dir}/0`);
+      this.idle();
     } else if (!this.target) {
+      this.idle();
       if (now > this.pauseUntil) this.pickTarget();
     } else {
       const dx = this.target.x - this.sprite.x;
@@ -195,14 +217,48 @@ export class Actor {
     const y = Math.round(this.sprite.y);
     this.sprite.setDepth(DEPTH.actors + y / 10_000);
     this.label.setPosition(x, y - 34);
+    this.labelShadow.setPosition(x + 1, y - 33);
     this.labelBack.setPosition(x, y - 37);
     this.emote?.setPosition(x, y - 36);
     this.placeBubble();
   }
 
+  /** Breathe in place, facing the way we last walked. */
+  private idle(): void {
+    const key = `${this.id}-idle-${this.dir}`;
+    if (this.sprite.anims.currentAnim?.key !== key || !this.sprite.anims.isPlaying)
+      this.sprite.play(key);
+  }
+
+  /** Nudge apart from a neighbour standing on the same spot. */
+  separate(others: Iterable<Actor>): void {
+    for (const o of others) {
+      if (o === this) continue;
+      const dx = this.sprite.x - o.sprite.x;
+      const dy = this.sprite.y - o.sprite.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 0 && d < ACTOR_SPACING_PX) {
+        const push = (ACTOR_SPACING_PX - d) * ACTOR_PUSH;
+        this.sprite.setPosition(
+          Phaser.Math.Clamp(
+            this.sprite.x + (dx / d) * push,
+            this.wander.left + WANDER_INSET.side,
+            this.wander.right - WANDER_INSET.side,
+          ),
+          Phaser.Math.Clamp(
+            this.sprite.y + (dy / d) * push,
+            this.wander.top + WANDER_INSET.top,
+            this.wander.bottom - WANDER_INSET.bottom,
+          ),
+        );
+      }
+    }
+  }
+
   destroy(): void {
     this.sprite.destroy();
     this.label.destroy();
+    this.labelShadow.destroy();
     this.labelBack.destroy();
     this.bubble?.destroy();
     this.emote?.destroy();

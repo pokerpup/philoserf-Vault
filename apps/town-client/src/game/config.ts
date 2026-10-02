@@ -17,7 +17,12 @@ export const DEPTH = {
   bubbles: 60,
 } as const;
 
-export const WATER_FRAME_MS = 650;
+export const WATER_FRAME_MS = 520;
+export const IDLE_FPS = 1.4;
+export const SMOKE_FPS = 3;
+export const SMOKE_RISE_PX = 10;
+export const CAMERA_LERP = 0.18;
+export const ACTOR_SPACING_PX = 11;
 export const WALK_SPEED = 28;
 export const WALK_FPS = 8;
 export const WANDER_PAUSE_MS: [number, number] = [1800, 5200];
@@ -37,3 +42,9 @@ export const NIGHT = {
   dawnTo: 7 * 60,
 } as const;
 export const FIRM_GLOW_ALPHA = 0.55;
+
+export const SMOKE_ALPHA: [number, number] = [0.85, 0.15];
+export const SMOKE_RISE_MS = 1900;
+export const ACTOR_PUSH = 0.5;
+/** Keep actors this far inside the wander rectangle: sides, top (room for the head), bottom. */
+export const WANDER_INSET = { side: 8, top: 24, bottom: 2 } as const;

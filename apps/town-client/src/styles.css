@@ -38,7 +38,7 @@ body {
 /* §4.5: wood panel with brass corners as a 9-slice, shown at an integer multiple */
 .plank {
   border: 16px solid transparent;
-  border-image: url('/assets/tallyford/ui/panel.png') 16 / calc(var(--unit) * 16) / 0 round;
+  border-image: url('/assets/tallyford/ui/panel.png') 16 fill / calc(var(--unit) * 16) / 0 round;
   image-rendering: pixelated;
 }
 #clock {
