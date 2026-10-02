@@ -1,0 +1,19 @@
+{
+  "generated_by": "scripts/art-build.ts",
+  "map": {
+    "width": 96,
+    "height": 64,
+    "tiles": 560,
+    "water_tiles": 18,
+    "lights": 69,
+    "spawns": 12,
+    "smoke": 7
+  },
+  "people": 12,
+  "seasons": [
+    "spring",
+    "summer",
+    "fall",
+    "winter"
+  ]
+}

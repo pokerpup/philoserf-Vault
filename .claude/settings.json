@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env*)", "Read(/agents/**)", "Edit(/agents/**)",
+      "Edit(./apps/town-server/gateway/**)", "Edit(./apps/town-server/mayor/policy/**)",
+      "Bash(curl *)", "Bash(wget *)", "Bash(rm -rf *)"
+    ],
+    "ask": [
+      "Bash(git push *)", "Bash(pnpm add *)", "Bash(pnpm remove *)",
+      "Edit(./config/bridge.yaml)", "Edit(./config/evolution.yaml)", "Edit(./config/mayor.policy.yaml)"
+    ],
+    "allow": [
+      "Bash(pnpm test*)", "Bash(pnpm data:lint)", "Bash(pnpm art:qa)", "Bash(pnpm depcruise)",
+      "Bash(pnpm sim:year)", "Bash(pnpm lint*)", "Bash(git status*)", "Bash(git diff*)",
+      "Bash(git log*)", "Bash(git add *)", "Bash(git commit *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "cat docs/spec/phases/CURRENT 2>/dev/null" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write", "hooks": [ { "type": "command",
+        "command": "f=$(jq -r '.tool_input.file_path'); case \"$f\" in *packages/game-data/*) pnpm -s data:lint && scripts/banned-words.sh \"$f\" ;; *packages/game-*|*apps/town-server/game/*|*apps/town-client/src/game/*) pnpm -s depcruise ;; *art/*) pnpm -s art:qa ;; esac" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command",
+        "command": "if [ \"$(jq -r .stop_hook_active)\" = true ]; then exit 0; fi; pnpm -s test --changed >/tmp/t.log 2>&1 || { tail -40 /tmp/t.log >&2; exit 2; }" } ] }
+    ]
+  }
+}

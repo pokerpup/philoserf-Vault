@@ -1,0 +1,154 @@
+:root {
+  color-scheme: dark;
+  --ink: #f1e9d8;
+  --paper: #15121c;
+  --panel: #2a2438;
+  --brass: #e0b83c;
+  --brass-dim: #b08a30;
+  --mute: #bcb9c2;
+  --wood: #8a5a2b;
+  --wood-dark: #5a3420;
+  --unit: 3px; /* every HUD border is drawn at an integer multiple of the 16-px slice */
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font:
+    14px/1.4 ui-monospace,
+    'Cascadia Mono',
+    'JetBrains Mono',
+    Menlo,
+    monospace;
+}
+#app {
+  display: grid;
+  grid-template-columns: 1fr 392px;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+/* §4.5: wood panel with brass corners as a 9-slice, shown at an integer multiple */
+.plank {
+  border: 16px solid transparent;
+  border-image: url('/assets/tallyford/ui/panel.png') 16 fill / calc(var(--unit) * 16) / 0 round;
+  image-rendering: pixelated;
+}
+#clock {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 0.35rem 1rem;
+}
+#clock strong {
+  color: var(--brass);
+  letter-spacing: 0.04em;
+}
+#clock .live {
+  margin-left: auto;
+  color: var(--mute);
+}
+#clock .live[data-on='true'] {
+  color: #9bd25e;
+}
+#game-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0d0d14;
+}
+/* §4.2: every canvas, sprite and portrait is shown at an integer multiple with nearest-neighbour scaling. */
+#game-container canvas,
+img.pixel,
+.portrait {
+  image-rendering: pixelated !important;
+}
+#agents-panel {
+  overflow: auto;
+  padding: 0.5rem 0.75rem;
+}
+#agents-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--brass);
+  letter-spacing: 0.04em;
+}
+#agents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#agents li {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 1px dotted var(--wood-dark);
+}
+.portrait {
+  width: 64px;
+  height: 64px;
+  background-repeat: no-repeat;
+  background-size: 384px 64px;
+  background-color: #1b1b2a;
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px var(--wood);
+}
+#agents li .who {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+#agents li .callsign {
+  color: var(--brass);
+  font-weight: 700;
+}
+#agents li .dept {
+  color: var(--mute);
+  font-size: 0.75em;
+  margin-left: auto;
+}
+#agents li .state {
+  font-size: 0.8em;
+  color: var(--mute);
+}
+#agents li .state::before {
+  content: '●';
+  margin-right: 0.3em;
+  color: #9bd25e;
+}
+#agents li[data-state='waiting'] .state::before {
+  color: var(--brass);
+}
+#agents li[data-state='error'] .state::before,
+#agents li[data-state='blocked'] .state::before {
+  color: #e06a46;
+}
+#agents li[data-state='idle'] .state::before {
+  color: #8fd0ec;
+}
+#agents li[data-online='false'] .state {
+  color: #e06a46;
+}
+#agents li[data-online='false'] .state::before {
+  color: #625c6e;
+}
+#agents li .line {
+  display: block;
+  color: var(--ink);
+  font-size: 0.8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}

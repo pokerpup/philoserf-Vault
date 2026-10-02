@@ -1,223 +1,42 @@
-# Obsidian Starter
+# Agent Town
 
-A clean, minimalist Obsidian vault template for distraction-free note-taking and knowledge management.
+A web app where a firm of AI agents lives in one shared pixel-art town, Tallyford, each agent with its own persona, all reporting to a Mayor who is the safety and risk manager. Around that live dashboard sits a cozy farm-and-town game whose economy grows only from the agents' real work. Built phase by phase with Claude Code.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Where things are
 
-## Philosophy
+- `docs/spec/PROMPT.md` is the build spec and the source of truth. `docs/spec/RPG.md` adds the action-RPG and dungeon layer; `docs/spec/GAME-LAYER.md` keeps the game-layer addendum's long-form tables.
+- `CLAUDE.md` and `docs/GUARDRAILS.md` are the working agreement every Claude Code session loads. `.claude/` holds the permission settings and hooks, the five subagents, the skills and the path-scoped rules.
+- `docs/spec/phases/` has one scope-and-criteria file and one paste-ready session prompt per phase, 0 to 12; `CURRENT` points at the active phase.
+- `docs/spec/gamedev/` has the concept, pre-production, production, QA, launch and live-ops prompts; `/design-loop` runs one design question at a time.
+- `DECISIONS.md` records every default a session chose; `VERIFY.md` holds the hand-verification steps per phase; `scripts/banned-words.sh` is the originality check.
 
-This starter vault embraces the idea that the best knowledge systems grow organically from your own thinking patterns. Rather than adopting someone else’s complex system, start with this minimal foundation and build exactly what you need.
+## How to work
 
-Don’t start with other people’s clutter and cruft.
+Session 0, this scaffolding, is done. For each phase: `/clear`, create the branch named in the prompt header, paste `docs/spec/phases/phase-N.prompt.md` in plan mode, approve the plan once it quotes every acceptance criterion and names the failing test for each, build one criterion at a time, walk `VERIFY.md` by hand, merge. `docs/spec/phases/README.md` has the details.
 
-## Features
+## Run it
 
-- Minimal: No plugins, themes, or configurations that get in your way
-- Clean: Start with a blank slate, not someone else’s organization system
-- Flexible: Perfect for both beginners and advanced Obsidian users
-- Intentional: Designed after extensive Obsidian experience
+Node 22 and pnpm 10 (`corepack enable`).
 
-## What’s Included
+```sh
+pnpm install
+pnpm dev            # Town Server on :3001, client on :3000, the mock fleet, bridge rate 0
+pnpm test           # Vitest
+pnpm test:e2e       # Playwright against pnpm dev
+pnpm lint && pnpm typecheck && pnpm format:check
+pnpm data:lint      # packages/game-data and config/*.yaml against their JSON Schemas
+pnpm art:qa         # grid, palette and provenance of every image
+pnpm depcruise      # the dependency wall: game code never imports gateway or mayor/policy
+pnpm sim            # stream 30 s of mock-fleet events as JSON lines (--seconds, --seed)
+pnpm sim:year       # 365-day economy run (stub until Phase 6)
+pnpm art:build      # compile art/pixel into the tilesets, map, sprites, portraits, font
+pnpm art:preview map # render a sheet at 4× (terrain, objects, buildings, characters, portraits, ui, map)
+```
 
-This template provides:
+Layout: `apps/town-client` (Phaser 4 + React 19 + Vite), `apps/town-server` (Fastify), `packages/schema` (Zod + generated JSON Schema), `adapter-sdk` (signed events in ten lines), `sim` (the mock fleet and its fixtures), `game-data` (tables), `game-core` (pure rules), `save-migrations`, and `art/pixel` (every picture as code). `PLAN.md` maps the twelve agents to the firm and lists the open questions.
 
-- MIT License file
-- This README (remove it after setup)
+Later phases expand this file: adding an agent in one file, connecting a remote or local agent, the art pipeline, the kill switch, creating, hiring and awakening a resident, the farm loop, the bridge settings and Sim Season.
 
-What’s NOT included:
+## Licence
 
-- No community plugins
-- No custom themes
-- No pre-defined folder structure
-- No sample notes or templates
-
-## Prerequisites
-
-- [Obsidian](https://obsidian.md/) installed on your device
-- GitHub account (for using the template)
-- Git (optional, for cloning)
-
-## Quick Start
-
-1. Click the [“Use this template”](https://github.com/philoserf/obsidian-starter/generate) button
-1. Name your new repository
-1. Clone your repository or download as ZIP
-1. Open the folder as an Obsidian vault:
-
-- Launch Obsidian
-- Click “Open folder as vault”
-- Select your cloned/downloaded folder
-
-1. Start creating your first note
-
-## Next Steps
-
-After setup, consider:
-
-- Creating your first daily note
-- Exploring Settings → Options to customize appearance and behavior
-- Adding community plugins only when you identify a specific need
-- Developing your own folder structure as your notes accumulate
-
-## Who This Is For
-
-This starter vault is designed for:
-
-- **Minimalists** who want a clean foundation without unnecessary complexity
-- **Intentional users** who prefer to add features as needs arise
-- **Experienced Obsidian users** tired of inheriting others' organizational clutter
-- **New users** who want to develop their own thinking patterns from the start
-- **Anyone** seeking a distraction-free note-taking environment
-
-If you're overwhelmed by complex vault templates or want to escape from an over-configured system, this minimal approach helps you build exactly what you need—nothing more, nothing less.
-
-## Core Plugins Guide
-
-Obsidian comes with built-in core plugins. Here's guidance for minimalism and simplicity:
-
-### Essential Core Plugins
-
-These are enabled in this template:
-
-- **File explorer** - Navigate your vault
-- **Quick switcher** - Fast file navigation
-- **Backlinks** - See what links to the current note
-- **Command palette** - Access commands quickly
-- **Editor status** - Show editor state in the status bar
-
-### Core Plugins to Disable Initially
-
-Disable plugins you don't plan to use immediately. You can always re-enable them later:
-
-- **Audio recorder** - Unless you need voice notes
-- **Bases** - Unless you need database-style views
-- **Bookmarks** - Unless you prefer simpler navigation
-- **Canvas** - Unless you work with visual boards
-- **Daily notes** - Until you establish a daily note practice (see Daily Note Style Guidance section below)
-- **File recovery** - Unless you have external backups
-- **Footnotes** - Unless you write academic or long-form content
-- **Format converter** - Unless importing from other apps
-- **Graph view** - Unless you want to visualize note connections
-- **Note composer** - Until you need to split/merge notes
-- **Outgoing links** - Unless backlinks panel is insufficient
-- **Outline** - Unless you write long-form content
-- **Page preview** - Unless you prefer clicking through
-- **Properties** - Until you need metadata/frontmatter
-- **Publish** - Unless using Obsidian Publish
-- **Random note** - Unless you have a specific use case
-- **Search** - Unless you need the dedicated search panel
-- **Slash commands** - Unless you prefer typing naturally
-- **Slides** - Unless presenting from notes
-- **Sync** - Unless using Obsidian Sync
-- **Tags** - Until you develop a tagging system
-- **Templates** - Until you identify repeated patterns
-- **Unique note creator** - Unless you have a specialized workflow
-- **Web viewer** - Unless you need to browse web content in Obsidian
-- **Word count** - Unless you track writing metrics
-- **Workspaces** - Until managing multiple layouts
-
-**Recommendation**: Start with the essential plugins enabled, disable everything else. Re-enable features when you discover you need them.
-
-## Daily Note Style Guidance
-
-If you choose to use daily notes:
-
-### Minimalist Approach
-
-- **Keep it simple**: One note per day with date as filename (YYYY-MM-DD format)
-- **Freeform content**: No rigid template—write what matters that day
-- **Natural linking**: Reference other notes organically as you write
-- **Location**: Store in root or create a simple `/daily` folder when needed
-
-### When to Enable Daily Notes
-
-Enable the Daily Notes core plugin when you:
-
-- Want a consistent place to capture thoughts each day
-- Need a chronological record of your work or life
-- Find yourself creating dated notes manually
-- Want a default landing place when opening Obsidian
-
-### Daily Note Alternatives
-
-Don't feel obligated to use daily notes. Alternatives include:
-
-- Creating notes as topics arise (topic-based instead of time-based)
-- Using a single ongoing "scratchpad" note
-- Writing directly in project or topic notes
-- Journaling in a dedicated notebook outside Obsidian
-
-## Other Note Styles
-
-While this starter emphasizes minimalism, Obsidian supports many note-taking approaches:
-
-- **Zettelkasten**: Atomic notes with unique identifiers and connections
-- **PARA**: Projects, Areas, Resources, Archives organizational system
-- **Johnny Decimal**: Numerical categorization system
-- **MOCs (Maps of Content)**: Index notes that link to related content
-- **Topic-based**: Simple folders organized by subject
-- **Flat structure**: All notes in one folder, rely on links and search
-
-**Guidance**: Don't adopt a system upfront. Let your natural workflow emerge, then formalize it if helpful. Many users find success with a hybrid approach that evolves over time.
-
-## Learning from Maximalist Vaults
-
-You might encounter elaborate vault templates with dozens of plugins, complex folder structures, and extensive templates. Here's what to learn from them:
-
-### What to Observe
-
-- **Plugin solutions**: Note which plugins solve real problems you have
-- **Workflow patterns**: Identify useful processes, not entire systems
-- **Template ideas**: Extract specific templates when you repeat similar notes
-- **Organizational concepts**: Understand the thinking, but implement minimally
-
-### What to Avoid
-
-- **Copying entire systems**: Someone else's system rarely fits your brain
-- **Plugin overload**: Each plugin adds complexity and maintenance burden
-- **Premature optimization**: Don't organize notes you haven't created yet
-- **Feature accumulation**: More features don't mean better thinking
-
-### The Minimalist Mindset
-
-Start simple. Add intentionally. Remove ruthlessly. Your vault should serve your thinking, not showcase features.
-
-## My Rules
-
-Personal principles for maintaining this minimal approach:
-
-1. **Add friction to adding complexity**: Before installing a plugin, use Obsidian without it for a week. If you still want it, then install.
-2. **Delete before organizing**: If you haven't referenced a note in 6 months, delete it. Organization should serve active use, not archival anxiety.
-3. **Links over folders**: Prefer connecting notes through links rather than elaborate folder hierarchies. Search and links are more flexible than folders.
-4. **Templates when repeating three times**: Don't create a template until you've manually created the same note structure three times. Then you know it's actually useful.
-5. **One inbox, process daily**: Capture quickly in one place. Process and connect daily or weekly. Don't let unprocessed notes accumulate.
-6. **Review quarterly**: Every 3 months, review your plugins, settings, and structure. Remove what you're not using. Simplify what feels complex.
-7. **Mobile-first design**: If it doesn't work on mobile, reconsider if you need it. Complexity often fails on smaller screens.
-8. **Write for tomorrow**: Write notes you'd want to find in 3 months, not perfect notes that take 3 hours to create.
-9. **Trust search**: Build trust in search functionality. Don't over-organize because you're afraid you won't find things.
-10. **Your vault, your rules**: These are _my_ rules. Develop your own based on how you think and work.
-
-## Compatibility
-
-- Works with Obsidian (tested with latest versions)
-- Compatible with Visual Studio Code + Foam plugin
-- Supports desktop and mobile Obsidian apps
-
-## Documentation
-
-Visit the [project site](https://philoserf.github.io/obsidian-starter/) for additional information.
-
-## Contributing
-
-Issues and suggestions welcome. Open an issue to discuss changes or report problems.
-
-## License
-
-This project is licensed under the MIT License - see the <LICENSE> file for details.
-
-## Cleanup
-
-After creating your vault from this template, you can safely remove:
-
-- This README.md file
-- The LICENSE file (or keep it if redistributing)
+MIT, see `LICENSE`.

@@ -1,0 +1,47 @@
+{
+  "name": "agent-town",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"pnpm --filter @agent-town/town-server dev\" \"pnpm --filter @agent-town/town-client dev\"",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "data:lint": "tsx packages/game-data/scripts/lint.ts",
+    "art:qa": "tsx scripts/art-qa.ts",
+    "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "sim": "tsx packages/sim/src/cli.ts run",
+    "sim:year": "tsx packages/sim/src/cli.ts year",
+    "sim:vault": "tsx packages/sim/src/cli.ts vault",
+    "schema:gen": "tsx packages/schema/scripts/gen-json-schema.ts",
+    "sim:fixtures": "tsx packages/sim/scripts/gen-fixtures.ts",
+    "art:preview": "tsx scripts/art-preview.ts",
+    "art:build": "tsx scripts/art-build.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.19.0",
+    "@types/pngjs": "^6.0.5",
+    "concurrently": "^10.0.5",
+    "dependency-cruiser": "^18.5.0",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^16.4.0",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$comment": "PROMPT.md §7.3 Time runs on the real clock. Market hours are the firm's windows-glow window (US equities regular session); the real side never reads this file.",
+  "season_days": 28,
+  "seasons": ["spring", "summer", "fall", "winter"],
+  "awake": { "from": "06:00", "to": "02:00" },
+  "day_tick": "00:00",
+  "vigor_refill": "06:00",
+  "ledger_bin_payout": "06:00",
+  "market_hours": {
+    "from": "09:30",
+    "to": "16:00",
+    "weekdays": [1, 2, 3, 4, 5],
+    "timezone": "America/New_York"
+  },
+  "quality_multipliers": [1, 1.25, 1.5, 2]
+}

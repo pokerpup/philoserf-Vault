@@ -1,0 +1,159 @@
+# scripts/banned-words.txt — names and phrases from the reference game that must not appear
+# in packages/game-data, art/ or any shipped text (PROMPT.md §0 rule 8, §17 definition of done).
+# One entry per line; matched whole-word, case-insensitive by scripts/banned-words.sh.
+# Lines starting with # are comments. Left out on purpose: the reference game's character
+# names that are also ordinary English words or very common first names (Alex, Sam, Emily,
+# George, Penny, Robin, Sandy, Leo, Lewis, Clint, Kent, Pam, Vincent, Gus), so an original
+# line about a bird or a coin does not trip the check. Add them if a draft ever drifts.
+
+# the game and its world
+Stardew
+Stardew Valley
+Pelican Town
+Cindersap
+Cindersap Forest
+Ginger Island
+Calico Desert
+Skull Cavern
+Zuzu City
+Grampleton
+Secret Woods
+Mutant Bug Lair
+Community Center
+Adventurer's Guild
+Wizard's Tower
+JojaMart
+Joja
+Joja Corporation
+Pierre's General Store
+Stardrop Saloon
+Qi's Walnut Room
+Yoba
+Ferngill
+Zuzu
+Gotoro
+Witch's Hut
+Witch's Swamp
+Volcano Dungeon
+Desert Trader
+Traveling Cart
+
+# characters
+Abigail
+Haley
+Harvey
+Elliott
+Leah
+Maru
+Sebastian
+Shane
+Caroline
+Demetrius
+Evelyn
+Jodi
+Linus
+Marlon
+Marnie
+Pierre
+Willy
+Gunther
+Morris
+Krobus
+Rasmodius
+Jas
+Mr. Qi
+Mister Qi
+Professor Snail
+Welwick
+Hat Mouse
+Junimo
+Junimos
+
+# items and systems
+Stardrop
+Iridium
+Prismatic Shard
+Galaxy Sword
+Starfruit
+Ancient Fruit
+Sweet Gem Berry
+Golden Walnut
+Qi Gem
+Qi Gems
+Golden Pumpkin
+Rainbow Shell
+Junimo Hut
+Gold Clock
+Return Scepter
+Dwarvish
+Crystalarium
+Slime Hutch
+Rarecrow
+Lucky Purple Shorts
+Mermaid's Pendant
+Galaxy Soul
+Infinity Blade
+Void Egg
+Void Essence
+Solar Essence
+Qi Fruit
+Qi Bean
+Magic Rock Candy
+Auto-Grabber
+Auto-Petter
+Rain Totem
+Warp Totem
+Statue of Perfection
+Fairy Rose
+Blue Jazz
+Summer Spangle
+Cinder Shard
+Radioactive Ore
+# backpack tiers (the Tallyford 36-slot tier is the Ledger Pack)
+Large Pack
+Deluxe Pack
+
+# fish and monsters
+Crimsonfish
+Glacierfish
+Mutant Carp
+Woodskip
+Void Salmon
+Lava Eel
+Ice Pip
+Slimejack
+Dust Sprite
+Pepper Rex
+Squid Kid
+Shadow Brute
+Shadow Shaman
+Magma Sprite
+
+# mini-games
+Journey of the Prairie King
+Prairie King
+Junimo Kart
+CalicoJack
+Calico Jack
+
+# festivals and events
+Egg Festival
+Flower Dance
+Luau
+Dance of the Moonlight Jellies
+Moonlight Jellies
+Stardew Valley Fair
+Spirit's Eve
+Festival of Ice
+Night Market
+Feast of the Winter Star
+Winter Star
+Trout Derby
+SquidFest
+Desert Festival
+Grange Display
+
+# signature phrases
+Grandpa's Shrine
+Grandpa's evaluation
+Perfection tracker

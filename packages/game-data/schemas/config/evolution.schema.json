@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "town_levels": {
+      "minItems": 5,
+      "maxItems": 5,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "name": {
+            "type": "string"
+          },
+          "min_agents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "min_revenue_usd": {
+            "type": "number",
+            "minimum": 0
+          },
+          "min_uptime_pct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "min_success_pct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "require": {
+            "type": "string",
+            "enum": [
+              "any",
+              "all"
+            ]
+          }
+        },
+        "required": [
+          "level",
+          "name",
+          "require"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "building_tiers": {
+      "type": "object",
+      "properties": {
+        "tier2_needs_positive_pnl_days": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "tier2_needs_positive_pnl_days"
+      ],
+      "additionalProperties": false
+    },
+    "downturn": {
+      "type": "object",
+      "properties": {
+        "demolish": {
+          "type": "boolean",
+          "const": false
+        },
+        "soup_after_losing_days": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "demolish",
+        "soup_after_losing_days"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "town_levels",
+    "building_tiers",
+    "downturn"
+  ],
+  "additionalProperties": false
+}
