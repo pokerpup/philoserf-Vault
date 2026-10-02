@@ -4,12 +4,13 @@
 // bitmap font. Every output is recorded in art/provenance.json; `pnpm art:qa` checks them all.
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { DIRS, frame, HAIR_STYLES, type Look } from '../art/pixel/characters.ts';
+import { DIRS, frame, FRAMES_PER_DIR, HAIR_STYLES, type Look } from '../art/pixel/characters.ts';
 import { buildFont } from '../art/pixel/font.ts';
 import { paletteGpl, SEASON_SWAPS, SKIN, TRIO, type Season } from '../art/pixel/palette.ts';
 import { AtlasBuilder, toPNG } from '../art/pixel/pixmap.ts';
 import { EXPRESSIONS, portraitStrip } from '../art/pixel/portraits.ts';
 import { buildTown, MAP_H, MAP_W } from '../art/pixel/town-map.ts';
+import { smokeFrames } from '../art/pixel/objects.ts';
 import { BUBBLE, BUBBLE_TAIL, EMOTES, lightMask, PANEL, ring } from '../art/pixel/ui.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -18,6 +19,12 @@ const FIXTURES = join(ROOT, 'packages', 'sim', 'fixtures');
 const SEASONS: Season[] = ['spring', 'summer', 'fall', 'winter'];
 
 const written: string[] = [];
+
+function walk(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)],
+  );
+}
 function write(rel: string, data: Buffer | string): void {
   const file = join(OUT, rel);
   mkdirSync(join(file, '..'), { recursive: true });
@@ -60,9 +67,9 @@ function lookOf(card: unknown, file: string): Look {
   };
 }
 
-// start clean so stale files never ship
-rmSync(OUT, { recursive: true, force: true });
+// write in place (a running Vite dev server keeps its public-folder watch), then prune stale files
 mkdirSync(OUT, { recursive: true });
+const before = new Set(walk(OUT));
 
 // 1. palette
 writeFileSync(join(ROOT, 'art', 'palette.gpl'), paletteGpl());
@@ -87,7 +94,8 @@ const people: { id: string; name: string }[] = [];
 for (const { file, card } of cards) {
   const id = card.data.extensions.agent_town.id;
   const look = lookOf(card, file);
-  for (const d of DIRS) for (let n = 0; n < 4; n++) chars.add(`${id}/${d}/${n}`, frame(look, d, n));
+  for (const d of DIRS)
+    for (let n = 0; n < FRAMES_PER_DIR; n++) chars.add(`${id}/${d}/${n}`, frame(look, d, n));
   write(`portraits/${id}.png`, toPNG(portraitStrip(look)));
   people.push({ id, name: card.data.name });
 }
@@ -110,6 +118,7 @@ ui.add('bubble-tail', BUBBLE_TAIL);
 for (const [k, p] of Object.entries(EMOTES)) ui.add(`emote-${k}`, p);
 ui.add('light', lightMask());
 ui.add('ring', ring());
+smokeFrames().forEach((f, i) => ui.add(`smoke-${i}`, f));
 const uiSheet = ui.render();
 write('ui.png', toPNG(uiSheet.sheet));
 write('ui.json', AtlasBuilder.phaserJson(uiSheet.frames, 'ui.png', uiSheet.sheet));
@@ -131,9 +140,10 @@ write(
         width: MAP_W,
         height: MAP_H,
         tiles: town.tileset.tiles.length,
-        water_tiles: Object.keys(town.waterSwap).length,
+        water_tiles: Object.keys(town.waterCycle).length,
         lights: town.lights.length,
         spawns: town.spawns.length,
+        smoke: town.smoke.length,
       },
       people: people.length,
       seasons: SEASONS,
@@ -142,6 +152,8 @@ write(
     2,
   ) + '\n',
 );
+for (const stale of before)
+  if (!written.includes(relative(ROOT, stale))) rmSync(stale, { force: true });
 const provenanceFile = join(ROOT, 'art', 'provenance.json');
 const keep = (JSON.parse(readFileSync(provenanceFile, 'utf8')) as { file: string }[]).filter(
   (e) => !e.file.startsWith('apps/town-client/public/assets/'),

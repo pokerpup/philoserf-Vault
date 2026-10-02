@@ -3,41 +3,65 @@
 // building out from a short spec. Every §7.5 building is a spec, not a drawing.
 import { RAMPS, type Ramp, type RampName } from './palette.ts';
 import { applyRamp, blank, blit, clone, px, set, shaded, type Pixmap } from './pixmap.ts';
-import { CLOCK, CUPOLA, FLOWER_BOX, PLAQUE } from './objects.ts';
+import { CLOCK, CUPOLA, FLOWER_BOX, PLAQUE, WALL_LANTERN } from './objects.ts';
 
 // ---- roofs ---------------------------------------------------------------------------------
 
-/** One shingle row for an absolute roof y: bands of four rows, every other band offset by half a shingle. */
-function shingleRow(absY: number, x: number): string {
+/**
+ * One shingle pixel for an absolute roof position: bands of four rows, every other band offset by
+ * half a shingle, each shingle with a lit top edge, a rounded shaded foot and a seam, and a little
+ * tone variation so the roof is never a flat pattern.
+ */
+function shingle(absX: number, absY: number): string {
   const band = Math.floor(absY / 4);
   const r = absY % 4;
   const off = (band % 2) * 4;
-  const inShingle = (x + off) % 8;
-  if (r === 0) return inShingle === 1 || inShingle === 2 ? 'R5' : 'R4';
-  if (r === 3) return 'R2';
-  return inShingle === 7 ? 'R2' : 'R3';
+  const i = (absX + off) % 8;
+  const id = Math.floor((absX + off) / 8);
+  const tone = hash(id, band) % 11;
+  const body = tone === 0 ? 'R4' : tone === 1 ? 'R2' : 'R3';
+  if (r === 0) return i === 1 || i === 2 ? 'R5' : i === 7 ? 'R2' : 'R4';
+  if (r === 3) return i === 7 ? 'R1' : 'R2';
+  if (i === 7) return 'R2';
+  if (r === 2 && (i === 0 || i === 6)) return 'R2';
+  return body;
 }
 
 export type Col = 'l' | 'm' | 'r' | 'lr';
 export type RoofPart = 'ridge' | 'mid' | 'eave';
+export type Overhang = 'none' | 'left' | 'right';
 
-export function roofPiece(part: RoofPart, col: Col, absRow: number, ramp: Ramp): Pixmap {
+/**
+ * A roof tile. `over` draws the half-tile overhang past the wall on that side: the roof's own
+ * edge with its outline, over nothing. Eave tiles end in a lit fascia board and its underside.
+ */
+export function roofPiece(
+  part: RoofPart,
+  absRow: number,
+  ramp: Ramp,
+  over: Overhang = 'none',
+  fascia: Ramp = RAMPS.frame,
+): Pixmap {
   const p = blank(16, 16);
   for (let y = 0; y < 16; y++) {
     for (let x = 0; x < 16; x++) {
+      if (over === 'left' && x < 8) continue;
+      if (over === 'right' && x >= 8) continue;
       let c: string;
       const absY = absRow * 16 + y;
       if (part === 'ridge' && y === 0) c = 'R1';
-      else if (part === 'ridge' && y === 1) c = 'R4';
-      else if (part === 'ridge' && y === 2) c = 'R5';
-      else if (part === 'eave' && y >= 13) c = y === 15 ? 'R1' : 'R2';
-      else c = shingleRow(absY, x);
-      if ((col === 'l' || col === 'lr') && x === 0) c = 'R1';
-      if ((col === 'r' || col === 'lr') && x === 15) c = 'R1';
+      else if (part === 'ridge' && y === 1) c = 'R5';
+      else if (part === 'ridge' && y === 2) c = 'R4';
+      else if (part === 'eave' && y === 13) c = 'R2';
+      else if (part === 'eave' && y === 14) c = 'F4';
+      else if (part === 'eave' && y === 15) c = 'F2';
+      else c = shingle(x, absY);
+      if (over === 'left' && x === 8) c = y >= 14 ? 'F1' : 'R1';
+      if (over === 'right' && x === 7) c = y >= 14 ? 'F1' : 'R1';
       set(p, x, y, c);
     }
   }
-  return applyRamp(p, ramp);
+  return applyRamp(applyRamp(p, ramp), fascia, 'F');
 }
 
 // ---- walls ---------------------------------------------------------------------------------
@@ -58,18 +82,24 @@ function wallTexture(material: WallMaterial, absX: number, absY: number): string
       const r = absY % 4;
       const off = (band % 2) * 4;
       const i = (absX + off) % 8;
+      const id = Math.floor((absX + off) / 8);
       if (r === 3 || i === 7) return 'R2';
+      const tone = hash(id, band) % 9;
       if (r === 0 && i === 0) return 'R4';
-      return hash(Math.floor((absX + off) / 8), band) % 7 === 0 ? 'R2' : 'R3';
+      if (r === 0) return tone === 0 ? 'R3' : 'R4';
+      return tone === 0 ? 'R2' : tone === 1 ? 'R4' : 'R3';
     }
     case 'stone': {
       const band = Math.floor(absY / 5);
       const r = absY % 5;
       const off = (band % 2) * 3;
       const i = (absX + off) % 7;
+      const id = Math.floor((absX + off) / 7);
       if (r === 4 || i === 6) return 'R2';
+      const tone = hash(id, band) % 5;
       if (r === 0 && i === 0) return 'R5';
-      return hash(Math.floor((absX + off) / 7), band) % 4 === 0 ? 'R3' : 'R4';
+      if (r === 3 || i === 5) return tone === 0 ? 'R2' : 'R3';
+      return tone === 0 ? 'R3' : 'R4';
     }
     case 'planks':
     case 'red-wood': {
@@ -79,53 +109,79 @@ function wallTexture(material: WallMaterial, absX: number, absY: number): string
       if (r === 3) return 'R2';
       if (r === 0) return 'R5';
       if (absX % 16 === seam) return 'R2';
+      if (hash(absX, band) % 61 === 0) return 'R2'; // a knot
       return 'R4';
     }
     default: {
+      // plaster and whitewash: a sparse, quiet grain
       const h = hash(absX, absY);
-      return h % 41 === 0 ? 'R5' : h % 47 === 0 ? 'R3' : 'R4';
+      return material === 'whitewash'
+        ? h % 89 === 0
+          ? 'R3'
+          : 'R4'
+        : h % 41 === 0
+          ? 'R5'
+          : h % 59 === 0
+            ? 'R3'
+            : 'R4';
     }
   }
 }
 
+/**
+ * A wall tile: the material's texture, an eave shadow under the roof, a corner board on the
+ * building's outer columns, a baseboard and a stone footing on the bottom row.
+ */
 export function wallPiece(
   material: WallMaterial,
   part: WallPart,
   col: Col,
   absCol: number,
   absRow: number,
+  frame: Ramp = RAMPS.frame,
 ): Pixmap {
   const p = blank(16, 16);
   for (let y = 0; y < 16; y++) {
     for (let x = 0; x < 16; x++) {
       let c = wallTexture(material, absCol * 16 + x, absRow * 16 + y);
       if (part === 'top' && y < 2) c = 'R2';
-      if (part === 'bot' && y >= 13) c = y === 13 ? 'R2' : 'F';
-      if ((col === 'l' || col === 'lr') && x === 0) c = 'R1';
-      if ((col === 'r' || col === 'lr') && x === 15) c = 'R1';
+      else if (part === 'top' && y === 2) c = c === 'R5' || c === 'R4' ? 'R3' : c;
+      if (part === 'bot' && y === 12) c = 'F2';
+      if (part === 'bot' && y >= 13) c = 'FOOT';
+      if (col === 'l' || col === 'lr') {
+        if (x === 0) c = 'F1';
+        else if (x === 1) c = y === 12 && part === 'bot' ? 'F2' : 'F4';
+      }
+      if (col === 'r' || col === 'lr') {
+        if (x === 15) c = 'F1';
+        else if (x === 14) c = y === 12 && part === 'bot' ? 'F2' : 'F3';
+      }
       set(p, x, y, c);
     }
   }
-  const out = applyRamp(p, RAMPS[material]);
-  // foundation stones below the wall
-  for (let y = 14; y < 16; y++) {
+  const out = applyRamp(applyRamp(p, RAMPS[material]), frame, 'F');
+  for (let y = 13; y < 16; y++) {
     for (let x = 0; x < 16; x++) {
-      if (out.px[y * 16 + x] !== 'F') continue;
+      if (out.px[y * 16 + x] !== 'FOOT') continue;
       const absX = absCol * 16 + x;
       out.px[y * 16 + x] =
         y === 15
           ? 'slate-dark'
-          : absX % 5 === 4
-            ? 'slate'
-            : (Math.floor(absX / 5) + absRow) % 2
+          : y === 13
+            ? absX % 6 === 0
               ? 'stone'
-              : 'stone-light';
+              : 'stone-light'
+            : absX % 6 === 5
+              ? 'slate'
+              : (Math.floor(absX / 6) + absRow) % 2
+                ? 'stone'
+                : 'stone-light';
     }
   }
   return out;
 }
 
-/** Timber framing laid over plaster: beams on the lit edge in highlight, shadow on the other. */
+/** Timber framing laid over plaster: beams with a lit and a shaded edge, braces on alternate tiles. */
 export function timberFrame(
   part: WallPart,
   col: Col,
@@ -139,18 +195,16 @@ export function timberFrame(
       set(p, x0 + 1, y, 'R2');
     }
   };
-  if (col === 'l' || col === 'lr') beamV(1);
-  if (col === 'r' || col === 'lr') beamV(13);
   if (col === 'm') beamV(7);
   if (part === 'top')
     for (let x = 0; x < 16; x++) {
-      set(p, x, 2, 'R4');
-      set(p, x, 3, 'R2');
+      set(p, x, 3, 'R4');
+      set(p, x, 4, 'R2');
     }
   if (part === 'bot')
     for (let x = 0; x < 16; x++) {
-      set(p, x, 11, 'R4');
-      set(p, x, 12, 'R2');
+      set(p, x, 10, 'R4');
+      set(p, x, 11, 'R2');
     }
   if (brace && part === 'mid') {
     for (let i = 0; i < 12; i++) {
@@ -166,81 +220,98 @@ export function timberFrame(
 const GLASS = {
   i: 'water',
   j: 'water-light',
-  k: 'foam',
+  k: 'mist',
   h: 'river',
   x: 'cream',
   '0': 'ink',
   g: 'gold',
+  p: 'peach',
+  q: 'ember',
+  s: 'ink@70',
+  '.': null,
 };
 
-export function windowPiece(kind: 'small' | 'arched' = 'small', ramp: Ramp = RAMPS.frame): Pixmap {
+/**
+ * A four-pane window: lintel, frame, chunky mullions with a lit and a shaded side, each pane lit
+ * at its top-left, a sill that casts a shadow on the wall. Homes get a valance and a curtain fold.
+ */
+export function windowPiece(
+  kind: 'small' | 'arched' = 'small',
+  ramp: Ramp = RAMPS.frame,
+  curtains = false,
+): Pixmap {
   const rows =
     kind === 'arched'
       ? `
       ................
-      ......1111......
-      ....11444411....
-      ...1444444441...
-      ...14kjjhjjj41..
-      ...14jjjhjjj41..
-      ...14jjjhiii41..
-      ...14hhhhhhh41..
-      ...14iiihiii41..
-      ...14iiihiii41..
-      ...14iiihiii41..
-      ...14iiihiii41..
-      ...1444444441...
-      ..155555555551..
-      ..111111111111..
+      .....144441.....
+      ...1144444411...
+      ..14433333344 1.
+      ..13kjjj42jjj31.
+      ..13jjji42iiih1.
+      ..13jjii42iiih1.
+      ..1344444444441.
+      ..1322222222221.
+      ..13jjii42iiih1.
+      ..13jiii42iiih1.
+      ..13iiih42hhhh1.
+      ..13333333333331
+      .55555555555555.
+      ssssssssssssssss
       ................`
       : `
       ................
-      ................
-      ...1111111111...
-      ...1444444441...
-      ...14kjjhjjj41..
-      ...14jjjhjjj41..
-      ...14jjjhiii41..
-      ...14hhhhhhh41..
-      ...14iiihiii41..
-      ...14iiihiii41..
-      ...14iiihiii41..
-      ...1444444441...
-      ..155555555551..
-      ..111111111111..
-      ................
+      .44444444444444.
+      .11111111111111.
+      ..13333333333331
+      ..13kjjj42jjjk31
+      ..13jjji42iiih31
+      ..13jjii42iiih31
+      ..13444444444431
+      ..13222222222231
+      ..13jjii42iiih31
+      ..13jiii42iiih31
+      ..13iiih42hhhh31
+      ..13333333333331
+      .55555555555555.
+      ssssssssssssssss
       ................`;
-  return applyRamp(shaded(rows.replace(/^ {6}/gm, ''), GLASS), ramp);
+  let fixed = rows.replace(/ 1\./g, '41.').replace(/^ {6}/gm, '');
+  if (curtains)
+    fixed = fixed
+      .replace('13kjjj42jjjk31', '13pppp42pppp31')
+      .replace('13jjji42iiih31', '13qjji42iiiq31');
+  return applyRamp(shaded(fixed, GLASS), ramp);
 }
 
-/** A tall window for the Firm, 16×32, arched. */
+/** A tall arched window for the Firm, 16×32: three rows of panes. */
 export function tallWindow(ramp: Ramp = RAMPS.frame): Pixmap {
   const rows = `
     ................
-    ......1111......
-    ....11444411....
-    ...1444444441...
-    ...14kjjhjjj41..
-    ...14jjjhjjj41..
-    ...14jjjhjjj41..
-    ...14jjjhiii41..
-    ...14hhhhhhh41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14hhhhhhh41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14hhhhhhh41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...14iiihiii41..
-    ...1444444441...
-    ..155555555551..
-    ..111111111111..
+    .....144441.....
+    ...1144444411...
+    ..1443333334441.
+    ..13kjjj42jjjh31
+    ..13jjji42iiih31
+    ..13jjii42iiih31
+    ..13444444444431
+    ..13222222222231
+    ..13jjii42iiih31
+    ..13jiii42iiih31
+    ..13iiih42hhhh31
+    ..13444444444431
+    ..13222222222231
+    ..13jjii42iiih31
+    ..13jiii42iiih31
+    ..13iiih42hhhh31
+    ..13444444444431
+    ..13222222222231
+    ..13jjii42iiih31
+    ..13jiii42iiih31
+    ..13iiih42hhhh31
+    ..13333333333331
+    .55555555555555.
+    ssssssssssssssss
     ................
     ................
     ................
@@ -251,29 +322,30 @@ export function tallWindow(ramp: Ramp = RAMPS.frame): Pixmap {
   return applyRamp(shaded(rows, GLASS), ramp);
 }
 
-/** A shop window, 32×16: one wide pane with a sill. */
+/** A shop window, 32×16: one wide display pane in a heavy frame, a sill with its shadow. */
 export function shopWindow(ramp: Ramp = RAMPS.frame): Pixmap {
   const rows = `
     ................................
-    ................................
-    ..1111111111111111111111111111..
-    ..1444444444444444444444444441..
-    ..14kjjjjjjjjjjjjhjjjjjjjjjjj41.
-    ..14jjjjjjjjjjjjjhjjjjjjjjjjj41.
-    ..14jjjjjjjjjjjjjhiiiiiiiiiii41.
-    ..14jjjjjjjjjjjjjhiiiiiiiiiii41.
-    ..14iiiiiiiiiiiiihiiiiiiiiiii41.
-    ..14iiiiiiiiiiiiihiiiiiiiiiii41.
-    ..14iiiiiiiiiiiiihiiiiiiiiiii41.
-    ..1444444444444444444444444441..
-    .155555555555555555555555555555.
+    .444444444444444444444444444444.
     .111111111111111111111111111111.
+    ..13333333333333333333333333331.
+    ..13kjjjjjjjjjj42jjjjjjjjjjjk31.
+    ..13jjjjjjjjjjj42jjjjjjjjjjjh31.
+    ..13jjjjjjjjiii42iiiiiiiiiiih31.
+    ..13jjjjjiiiiii42iiiiiiiiiiih31.
+    ..13iiiiiiiiiii42iiiiiiiiiiih31.
+    ..13iiiiiiiiiih42hhhhhhhhhhhh31.
+    ..13iiiiiiiiiih42hhhhhhhhhhhh31.
+    ..13333333333333333333333333331.
+    .555555555555555555555555555555.
+    ssssssssssssssssssssssssssssssss
     ................................
     ................................`;
   return applyRamp(shaded(rows, GLASS), ramp);
 }
 
-export function door(ramp: Ramp = RAMPS.frame): Pixmap {
+/** A panelled door, 16×32: lintel board, jambs, a small pane up top, a brass knob, a kick plate. */
+export function door(ramp: Ramp = RAMPS.frame, pane = false): Pixmap {
   const rows = `
     ................
     ................
@@ -282,32 +354,40 @@ export function door(ramp: Ramp = RAMPS.frame): Pixmap {
     ................
     ................
     ................
-    ................
-    ......1111......
-    ....11433441....
-    ...1443334431...
-    ...1433333331...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233g31...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1433233231...
-    ...1222222221...
-    ...1111111111...`;
-  return applyRamp(shaded(rows, GLASS), ramp);
+    ..444444444444..
+    ..111111111111..
+    ..1433333333421.
+    ..1433333333421.
+    ..143WWWWWWW421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143WWWWWWW421.
+    ..1433333333421.
+    ..143WWWWWWW421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143W3333gW421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143W33333W421.
+    ..143WWWWWWW421.
+    ..1433333333421.
+    ..1422222222221.
+    ..1222222222221.
+    ..111111111111..
+    ..555555555555..`;
+  const fixed = pane
+    ? rows
+        .replace(
+          '..143W33333W421.\n    ..143W33333W421.\n    ..143W33333W421.\n    ..143WWWWWWW421.\n    ..1433333333421.',
+          '..143Wjjjj iW421.\n    ..143Wjjiih W421.\n    ..143Wiiihh W421.\n    ..143WWWWWWW421.\n    ..1433333333421.',
+        )
+        .replace(/ /g, '')
+    : rows;
+  return applyRamp(shaded(fixed.replace(/W/g, '2'), GLASS), ramp);
 }
 
 export function doubleDoor(ramp: Ramp = RAMPS.frame): Pixmap {
@@ -317,34 +397,34 @@ export function doubleDoor(ramp: Ramp = RAMPS.frame): Pixmap {
     ................................
     ................................
     ................................
+    ..4444444444444444444444444444..
+    ..1111111111111111111111111111..
+    ..14333333333321123333333333421.
+    ..14333333333321123333333333421.
+    ..143WWWWWWWW321123WWWWWWWW3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143WWWWWWWW321123WWWWWWWW3421.
+    ..14333333333321123333333333421.
+    ..143WWWWWWWW321123WWWWWWWW3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143W33333gW321123Wg33333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143W333333W321123W333333W3421.
+    ..143WWWWWWWW321123WWWWWWWW3421.
+    ..14333333333321123333333333421.
+    ..14222222222221122222222222421.
+    ..12222222222221122222222222221.
+    ..1111111111111111111111111111..
+    ..5555555555555555555555555555..
     ................................
-    ............11111111............
-    ..........114444444411..........
-    ........1144333333334411........
-    .......14433333333333344........
-    ......1433333333333333331.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233g33g33233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1433233233233233231.......
-    ......1222222222222222221.......
-    ......1111111111111111111.......`;
-  return applyRamp(shaded(rows, GLASS), ramp);
+    ................................`;
+  return applyRamp(shaded(rows.replace(/W/g, '2'), GLASS), ramp);
 }
 
 /** A barn door, 32×32: wide planks with a cross brace, in the barn's own ramp. */
@@ -357,30 +437,30 @@ export function barnDoor(ramp: Ramp = RAMPS['dark-wood']): Pixmap {
     ................................
     ................................
     ................................
+    ..4444444444444444444444444444..
+    ..1111111111111111111111111111..
+    ..14333333333333333333333333421.
+    ..13533333333333333333333335321.
+    ..13353333333333333333333353321.
+    ..13335333333333333333333533321.
+    ..13333533333333333333335333321.
+    ..13333353333333333333353333321.
+    ..13333335333333333333533333321.
+    ..13333333533333333335333333321.
+    ..13333333353333333353333333321.
+    ..13333333335333333533333333321.
+    ..13333333333533335333333333321.
+    ..13333333333353353333333333321.
+    ..13333333333335533333333333321.
+    ..13333333333353353333333333321.
+    ..13333333333533335333333333321.
+    ..13333333335333333533333333321.
+    ..13333333333333333333333333321.
+    ..13333333333333333333333333321.
+    ..12222222222222222222222222221.
+    ..1111111111111111111111111111..
+    ..5555555555555555555555555555..
     ................................
-    ...11111111111111111111111111...
-    ...14444444444444444444444441...
-    ...14333333333333333333333331...
-    ...13533333333333333333333531...
-    ...13353333333333333333335331...
-    ...13335333333333333333353331...
-    ...13333533333333333333533331...
-    ...13333353333333333335333331...
-    ...13333335333333333353333331...
-    ...13333333533333333533333331...
-    ...13333333353333335333333331...
-    ...13333333335333353333333331...
-    ...13333333333533533333333331...
-    ...13333333333353333333333331...
-    ...13333333333533533333333331...
-    ...13333333333333333333333331...
-    ...13333333333333333333333331...
-    ...13333333333333333333333331...
-    ...13333333333333333333333331...
-    ...13333333333333333333333331...
-    ...13333333333333333333333331...
-    ...12222222222222222222222221...
-    ...11111111111111111111111111...
     ................................`;
   return applyRamp(shaded(rows), ramp);
 }
@@ -388,20 +468,20 @@ export function barnDoor(ramp: Ramp = RAMPS['dark-wood']): Pixmap {
 export const CHIMNEY: Pixmap = px(
   `
   .....000000.....
-  ....4444444.....
-  ....4nnnnn3.....
-  .....nmnnm......
-  .....nnmnn......
-  .....mnnmn......
-  .....nnmnn......
-  .....nmnnm......
-  .....nnmnn......
-  .....mnnmn......
-  .....nnmnn......
-  .....nmnnm......
-  .....nnmnn......
-  .....mnnmn......
-  .....nnmnn......
+  ....44444444....
+  ....4nnnnnn3....
+  .....nmnnnm.....
+  .....nnmnnn.....
+  .....mnnnmn.....
+  .....nnmnnn.....
+  .....nmnnnm.....
+  .....nnmnnn.....
+  .....mnnnmn.....
+  .....nnmnnn.....
+  .....nmnnnm.....
+  .....nnmnnn.....
+  .....mnnnmn.....
+  .....nnmnnn.....
   ................`,
   { '0': 'ink', '3': 'stone', '4': 'stone-light', n: 'brick', m: 'brick-dark' },
 );
@@ -421,11 +501,12 @@ const ICONS: Record<string, string> = {
   bottle: `..00..\n..00..\n.0000.\n.0..0.\n.0..0.\n.0000.`,
 };
 
-/** A hanging shop sign with a 6×6 icon. */
+/** A hanging shop sign on an iron bracket with a 6×6 icon. */
 export function sign(icon: string, ramp: Ramp = RAMPS.frame): Pixmap {
   const rows = `
-    .......11.......
-    .......11.......
+    ......0.........
+    ......00000.....
+    ..........0.....
     ..111111111111..
     ..1444444444441.
     ..1433333333331.
@@ -438,25 +519,25 @@ export function sign(icon: string, ramp: Ramp = RAMPS.frame): Pixmap {
     ..1222222222221.
     ..111111111111..
     ................
-    ................
     ................`;
-  const board = applyRamp(shaded(rows), ramp);
+  const board = applyRamp(shaded(rows, { '0': 'slate-dark' }), ramp);
   const glyph = px(ICONS[icon] ?? ICONS.coin!, { '0': 'ink', g: 'gold', v: 'lantern' });
-  return blit(board, glyph, 5, 5);
+  return blit(board, glyph, 5, 6);
 }
 
-/** A striped awning, 16×16, with its shadow on the wall below. */
+/** A striped awning, 16×16, scalloped, with its shadow on the wall below. */
 export function awning(a: string, b: string, col: Col): Pixmap {
   const p = blank(16, 16);
   for (let y = 3; y < 10; y++) {
     for (let x = 0; x < 16; x++) {
       const stripe = Math.floor(x / 4) % 2 === 0 ? a : b;
-      set(p, x, y, y === 3 ? 'bark-dark' : stripe);
+      set(p, x, y, y === 3 ? 'bark-dark' : y === 4 ? (stripe === a ? b : a) : stripe);
     }
   }
   for (let x = 0; x < 16; x++) {
     if (x % 4 === 1 || x % 4 === 2) set(p, x, 10, Math.floor(x / 4) % 2 === 0 ? a : b);
-    set(p, x, 11, 'ink@60');
+    set(p, x, 11, 'ink@70');
+    set(p, x, 12, 'ink@35');
   }
   if (col === 'l' || col === 'lr') for (let y = 3; y < 11; y++) set(p, 0, y, 'bark-dark');
   if (col === 'r' || col === 'lr') for (let y = 3; y < 11; y++) set(p, 15, y, 'bark-dark');
@@ -481,14 +562,16 @@ export interface BuildingSpec {
   frame?: RampName;
   timber?: boolean;
   brace?: boolean;
-  door?: { x: number; kind?: 'single' | 'double' | 'barn' };
+  door?: { x: number; kind?: 'single' | 'double' | 'barn'; pane?: boolean };
   windows?: WindowSpec[];
+  /** Homes: a valance and a curtain fold in every small window. */
+  curtains?: boolean;
   chimneys?: number[];
   sign?: { x: number; icon: string };
   awning?: { x: number; w: number; colors: [string, string] };
   boxes?: number[];
   decor?: { what: 'clock' | 'plaque' | 'cupola'; x: number; row: number }[];
-  /** Windows glow at night; false for a derelict or an empty hall. */
+  /** Windows glow at night and lanterns flank the door; false for a derelict or an empty hall. */
   lit?: boolean;
 }
 
@@ -496,14 +579,19 @@ export interface ComposedBuilding {
   spec: BuildingSpec;
   w: number;
   h: number;
-  /** Roof rows, drawn above characters. */
+  /** Roof rows, drawn above characters; one tile wider than the walls on each side (the overhang). */
   above: Pixmap[][];
+  /** Tile offset of `above` relative to the walls' left edge. */
+  aboveOffsetX: number;
   /** Wall rows, drawn behind characters. */
   walls: Pixmap[][];
-  /** Pixel centres (relative to the building's top-left) of windows, for night light masks. */
-  lights: { x: number; y: number }[];
+  /** Pixel centres (relative to the walls' top-left) of windows and door lanterns, for night light masks. */
+  lights: { x: number; y: number; kind: 'window' | 'lantern' }[];
+  /** Pixel centres of chimney tops, relative to the walls' top-left, for smoke. */
+  smoke: { x: number; y: number }[];
   /** Tile x of the door's left tile (relative). */
   doorX: number;
+  doorWidth: number;
 }
 
 function cellCol(x: number, w: number): Col {
@@ -511,7 +599,7 @@ function cellCol(x: number, w: number): Col {
   return x === 0 ? 'l' : x === w - 1 ? 'r' : 'm';
 }
 
-/** Blit a tall picture across a stack of wall tiles starting at (tx, row). */
+/** Blit a tall picture across a stack of tiles starting at (tx, row). */
 function blitAcross(cells: Pixmap[][], pic: Pixmap, tx: number, row: number): void {
   for (let ty = 0; ty < pic.h / 16; ty++) {
     for (let txx = 0; txx < pic.w / 16; txx++) {
@@ -531,26 +619,29 @@ export function compose(spec: BuildingSpec): ComposedBuilding {
   const frameRamp = RAMPS[spec.frame ?? 'frame'];
   const above: Pixmap[][] = [];
   for (let r = 0; r < spec.roofRows; r++) {
-    const part: RoofPart = r === 0 ? 'ridge' : r === spec.roofRows - 1 ? 'eave' : 'mid';
-    const row: Pixmap[] = [];
-    for (let x = 0; x < spec.w; x++)
-      row.push(roofPiece(spec.roofRows === 1 ? 'eave' : part, cellCol(x, spec.w), r, roofRamp));
+    const part: RoofPart =
+      spec.roofRows === 1 ? 'eave' : r === 0 ? 'ridge' : r === spec.roofRows - 1 ? 'eave' : 'mid';
+    const row: Pixmap[] = [roofPiece(part, r, roofRamp, 'left', frameRamp)];
+    for (let x = 0; x < spec.w; x++) row.push(roofPiece(part, r, roofRamp, 'none', frameRamp));
+    row.push(roofPiece(part, r, roofRamp, 'right', frameRamp));
     above.push(row);
   }
   const walls: Pixmap[][] = [];
   for (let r = 0; r < spec.wallRows; r++) {
-    const part: WallPart = r === 0 ? 'top' : r === spec.wallRows - 1 ? 'bot' : 'mid';
+    const part: WallPart =
+      spec.wallRows === 1 ? 'bot' : r === 0 ? 'top' : r === spec.wallRows - 1 ? 'bot' : 'mid';
     const row: Pixmap[] = [];
     for (let x = 0; x < spec.w; x++) {
       const col = cellCol(x, spec.w);
-      const base = clone(wallPiece(spec.wall, spec.wallRows === 1 ? 'bot' : part, col, x, r));
+      const base = clone(wallPiece(spec.wall, part, col, x, r, frameRamp));
       if (spec.timber)
         blit(base, timberFrame(part, col, !!spec.brace && x % 2 === 1, frameRamp), 0, 0);
       row.push(base);
     }
     walls.push(row);
   }
-  const lights: { x: number; y: number }[] = [];
+  const lights: ComposedBuilding['lights'] = [];
+  const taken = new Set<string>();
   for (const w of spec.windows ?? []) {
     const kind = w.kind ?? 'small';
     const pic =
@@ -558,26 +649,43 @@ export function compose(spec: BuildingSpec): ComposedBuilding {
         ? tallWindow(frameRamp)
         : kind === 'shop'
           ? shopWindow(frameRamp)
-          : windowPiece(kind, frameRamp);
+          : windowPiece(kind, frameRamp, !!spec.curtains && kind === 'small');
     blitAcross(walls, pic, w.x, w.row);
+    for (let i = 0; i < pic.w / 16; i++)
+      for (let j = 0; j < pic.h / 16; j++) taken.add(`${w.x + i},${w.row + j}`);
     if (spec.lit !== false)
       lights.push({
         x: w.x * 16 + pic.w / 2,
-        y: (spec.roofRows + w.row) * 16 + (kind === 'tall' ? 12 : 8),
+        y: w.row * 16 + (kind === 'tall' ? 12 : 8),
+        kind: 'window',
       });
   }
   for (const bx of spec.boxes ?? []) blitAcross(walls, FLOWER_BOX, bx, spec.wallRows - 1);
   let doorX = Math.floor(spec.w / 2);
+  let doorWidth = 1;
   if (spec.door) {
     doorX = spec.door.x;
     const kind = spec.door.kind ?? 'single';
+    doorWidth = kind === 'single' ? 1 : 2;
     const pic =
       kind === 'double'
         ? doubleDoor(frameRamp)
         : kind === 'barn'
           ? barnDoor(RAMPS[spec.wall === 'red-wood' ? 'dark-wood' : 'frame'])
-          : door(frameRamp);
+          : door(frameRamp, !!spec.door.pane);
     blitAcross(walls, pic, doorX, spec.wallRows - 2);
+    for (let i = 0; i < doorWidth; i++) {
+      taken.add(`${doorX + i},${spec.wallRows - 2}`);
+      taken.add(`${doorX + i},${spec.wallRows - 1}`);
+    }
+    if (spec.lit !== false && kind !== 'barn') {
+      for (const lx of [doorX - 1, doorX + doorWidth]) {
+        const row = spec.wallRows - 2;
+        if (lx < 0 || lx >= spec.w || taken.has(`${lx},${row}`)) continue;
+        blitAcross(walls, WALL_LANTERN, lx, row);
+        lights.push({ x: lx * 16 + 7, y: row * 16 + 7, kind: 'lantern' });
+      }
+    }
   }
   if (spec.sign) blitAcross(walls, sign(spec.sign.icon, frameRamp), spec.sign.x, 0);
   if (spec.awning) {
@@ -593,11 +701,26 @@ export function compose(spec: BuildingSpec): ComposedBuilding {
     }
   }
   for (const d of spec.decor ?? []) {
-    if (d.what === 'cupola') blitAcross(above, CUPOLA, d.x, d.row - 1 >= 0 ? d.row - 1 : 0);
+    if (d.what === 'cupola') blitAcross(above, CUPOLA, d.x + 1, Math.max(0, d.row - 1));
     else blitAcross(walls, d.what === 'clock' ? CLOCK : PLAQUE, d.x, d.row);
   }
-  for (const cx of spec.chimneys ?? []) blitAcross(above, CHIMNEY, cx, 0);
-  return { spec, w: spec.w, h: spec.roofRows + spec.wallRows, above, walls, lights, doorX };
+  const smoke: { x: number; y: number }[] = [];
+  for (const cx of spec.chimneys ?? []) {
+    blitAcross(above, CHIMNEY, cx + 1, 0);
+    smoke.push({ x: cx * 16 + 8, y: -spec.roofRows * 16 + 1 });
+  }
+  return {
+    spec,
+    w: spec.w,
+    h: spec.roofRows + spec.wallRows,
+    above,
+    aboveOffsetX: -1,
+    walls,
+    lights,
+    smoke,
+    doorX,
+    doorWidth,
+  };
 }
 
 /** Flatten a composed building into one picture (for previews and tests). */
@@ -658,7 +781,7 @@ export const BUILDINGS: Record<string, BuildingSpec> = {
     wallRows: 3,
     wall: 'planks',
     roof: 'green-shingle',
-    door: { x: 1 },
+    door: { x: 1, pane: true },
     windows: [
       { x: 3, row: 1, kind: 'shop' },
       { x: 5, row: 1 },
@@ -676,6 +799,7 @@ export const BUILDINGS: Record<string, BuildingSpec> = {
     roof: 'terracotta',
     timber: true,
     brace: true,
+    curtains: true,
     door: { x: 3, kind: 'double' },
     windows: [
       { x: 0, row: 1 },

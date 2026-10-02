@@ -1,5 +1,5 @@
 import * as B from './buildings.ts';
-import { frame, type Look, DIRS } from './characters.ts';
+import { DIRS, frame, FRAMES_PER_DIR, type Look } from './characters.ts';
 import { buildFont, text } from './font.ts';
 import * as O from './objects.ts';
 import { blank, blit, type Pixmap } from './pixmap.ts';
@@ -169,13 +169,16 @@ export function previews(): Record<string, Pixmap> {
   const sand16 = Array.from({ length: 16 }, (_, m) => T.sand(m, m % 2));
   const chars: Pixmap[] = [];
   for (const look of SAMPLE_LOOKS)
-    for (const d of DIRS) for (let n = 0; n < 4; n++) chars.push(frame(look, d, n));
+    for (const d of DIRS) for (let n = 0; n < FRAMES_PER_DIR; n++) chars.push(frame(look, d, n));
   return {
     terrain: shelf(
       [
         ...T.GRASS,
         T.cobble(0),
         T.cobble(1),
+        T.cobble(2),
+        T.cobble(0, true),
+        ...T.GRASS_DECALS,
         T.TILLED,
         T.TILLED_WET,
         T.SPROUT,
@@ -196,7 +199,7 @@ export function previews(): Record<string, Pixmap> {
     ),
     objects: shelf(O.previewObjects(), 400),
     buildings: shelf(B.previewBuildings(), 480, 4),
-    characters: shelf(chars, 16 * 18, 2),
+    characters: shelf(chars, 16 * 22, 2),
     portraits: shelf(
       SAMPLE_LOOKS.map((l) => portraitStrip(l)),
       384 * 2,

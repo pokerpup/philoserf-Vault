@@ -28,30 +28,37 @@ function head(
 ): Pixmap {
   const [sh, main, hi] = skin;
   const p = blank(64, 64);
-  // shoulders and collar
-  for (let y = 50; y < 64; y++) {
-    const half = 12 + (y - 50) * 1.4;
+  // a soft vignette behind the bust so the portrait sits in its frame
+  fillEllipse(p, 32, 34, 27, 26, 'river-deep@70');
+  fillEllipse(p, 32, 34, 23, 22, 'plum-dark@60');
+  // shoulders and collar: a jacket with lapels over a lighter shirt
+  for (let y = 49; y < 64; y++) {
+    const half = 13 + (y - 49) * 1.6;
     for (let x = 0; x < 64; x++) {
       const dx = x + 0.5 - CX;
       if (Math.abs(dx) > half) continue;
-      set(p, x, y, dx < -half * 0.5 ? topColor[2] : dx > half * 0.55 ? topColor[0] : topColor[1]);
-      if (Math.abs(dx) > half - 1 || y === 63) set(p, x, y, 'ink');
+      let c = dx < -half * 0.45 ? topColor[2] : dx > half * 0.5 ? topColor[0] : topColor[1];
+      // lapel: a V from the shoulders to the chest, lighter inside
+      const v = (y - 49) * 0.9;
+      if (Math.abs(dx) < 7 - v * 0.35 && y < 60)
+        c = Math.abs(dx) < 5.5 - v * 0.35 ? 'bone' : topColor[2];
+      if (Math.abs(dx) > half - 1.2 || y === 63) c = 'ink';
+      set(p, x, y, c);
     }
   }
-  // collar notch
-  for (let y = 50; y < 56; y++)
-    for (let x = CX - 2 - (y - 50); x <= CX + 1 + (y - 50); x++)
-      if (y - 50 < 4) set(p, x, y, topColor[2]);
   // neck
-  fillRect(p, CX - 5, 44, 10, 9, sh);
-  for (let y = 44; y < 53; y++) {
+  fillRect(p, CX - 5, 43, 10, 9, sh);
+  fillRect(p, CX - 4, 43, 5, 8, main);
+  for (let y = 43; y < 51; y++) {
     set(p, CX - 5, y, 'ink');
     set(p, CX + 4, y, 'ink');
   }
   // ears
   fillEllipse(p, CX - HEAD_RX, HEAD_CY + 3, 3, 4, main);
   fillEllipse(p, CX + HEAD_RX, HEAD_CY + 3, 3, 4, sh);
-  // head with a shadow crescent on the lower right and a highlight on the upper left
+  set(p, CX - HEAD_RX, HEAD_CY + 3, sh);
+  set(p, CX + HEAD_RX, HEAD_CY + 3, 'ink@60');
+  // head: main, a shadow crescent on the lower right, a highlight on the upper left
   fillEllipse(p, CX, HEAD_CY, HEAD_RX, HEAD_RY, main);
   for (let y = 0; y < 64; y++) {
     for (let x = 0; x < 64; x++) {
@@ -60,25 +67,28 @@ function head(
       const d = dx * dx + dy * dy;
       if (d > 1) continue;
       const inner =
-        ((x + 0.5 - CX + 2.5) / (HEAD_RX - 2)) ** 2 +
-        ((y + 0.5 - HEAD_CY - 2.5) / (HEAD_RY - 2)) ** 2;
-      if (inner > 1 && dx + dy > 0.1) set(p, x, y, sh);
-      if (d < 0.5 && dx < -0.2 && dy < -0.4) set(p, x, y, hi);
+        ((x + 0.5 - CX + 2.5) / (HEAD_RX - 2.5)) ** 2 +
+        ((y + 0.5 - HEAD_CY - 3) / (HEAD_RY - 2.5)) ** 2;
+      if (inner > 1 && dx + dy > 0.05) set(p, x, y, sh);
+      const glow = ((x + 0.5 - CX + 6) / 9) ** 2 + ((y + 0.5 - HEAD_CY + 6) / 7) ** 2;
+      if (glow < 1) set(p, x, y, hi);
     }
   }
-  // selective outline: the darkest skin shade, ink only under the chin
+  // cheekbone highlight and jaw shade
+  fillEllipse(p, CX - 9, HEAD_CY + 8, 3, 1.5, hi);
+  for (let x = CX - 8; x <= CX + 8; x++)
+    if (get(p, x, HEAD_CY + HEAD_RY - 3) === main) set(p, x, HEAD_CY + HEAD_RY - 3, sh);
+  // selective outline: the darkest skin shade above, ink under the chin
   for (let y = 0; y < 64; y++) {
     for (let x = 0; x < 64; x++) {
       const dx = (x + 0.5 - CX) / HEAD_RX;
       const dy = (y + 0.5 - HEAD_CY) / HEAD_RY;
-      const d = dx * dx + dy * dy;
-      if (d > 1) continue;
+      if (dx * dx + dy * dy > 1) continue;
       const outer =
         ((x + 0.5 - CX) / (HEAD_RX - 1)) ** 2 + ((y + 0.5 - HEAD_CY) / (HEAD_RY - 1)) ** 2;
-      if (outer > 1) set(p, x, y, dy > 0.3 ? 'ink' : sh === 'bark-dark' ? 'ink' : sh);
+      if (outer > 1) set(p, x, y, dy > 0.35 ? 'ink' : sh === 'bark-dark' ? 'ink' : sh);
     }
   }
-  // ear outlines
   for (const [ex, col] of [
     [CX - HEAD_RX - 3, 'ink'],
     [CX + HEAD_RX + 2, 'ink'],
@@ -87,70 +97,96 @@ function head(
   return p;
 }
 
-const EYE_LEGEND = { w: 'bone', i: 'IRIS', I: 'IRIS_SH', o: 'ink', g: 'cream', '.': null };
+const EYE_LEGEND = {
+  w: 'bone',
+  i: 'IRIS',
+  I: 'IRIS_SH',
+  o: 'ink',
+  g: 'cream',
+  l: 'LID',
+  '.': null,
+};
+// 9×6 eyes: a heavy upper lash with a wing, whites, a two-tone iris with a glint, a soft lower lid.
 const EYES: Record<Expression, string> = {
-  neutral: `.ooooo.\nowwiIwo\nowiIIwo\n.ooooo.`,
-  happy: `.......\n.ooooo.\no.....o\n.......`,
-  sad: `ooo....\n.owwio.\n.owiIo.\n..ooo..`,
-  annoyed: `ooooooo\n.wwiIw.\n.ooooo.\n.......`,
-  surprised: `.ooooo.\nowwwwwo\nowiIIwo\nowwIIwo\n.ooooo.`,
-  smug: `ooooo..\n.wwiIo.\n.oooo..\n.......`,
+  neutral: `.ooooooo.\nowwwiIwwo\nowwiIIwwo\nowwwIwwwo\n.lllllll.\n.........`,
+  happy: `.........\n..ooooo..\n.o.....o.\no.......o\n.........\n.........`,
+  sad: `oooo.....\n.oowwiwo.\n..owiIIwo\n..owwIwwo\n...lllll.\n.........`,
+  annoyed: `ooooooooo\n.wwwiIww.\n.wwiIIww.\n.lllllll.\n.........\n.........`,
+  surprised: `.ooooooo.\nowwwwwwwo\nowwiIIwwo\nowwiIIwwo\nowwwIwwwo\n.ooooooo.`,
+  smug: `ooooooo..\n.wwwiIwo.\n.wwiIIwo.\n.lllllll.\n.........\n.........`,
 };
+// brows: two pixels thick, tapered
 const BROWS: Record<Expression, [string, number]> = {
-  neutral: [`.####.\n......`, 0],
-  happy: [`.####.\n#....#`, -1],
-  sad: [`#.....\n.####.`, -1],
-  annoyed: [`......\n######`, 1],
-  surprised: [`.####.\n#....#`, -3],
-  smug: [`......\n.#####`, 0],
+  neutral: [`..#####.\n.##...##`, 0],
+  happy: [`..#####.\n.##...##`, -1],
+  sad: [`##......\n.#####..`, -1],
+  annoyed: [`........\n########`, 1],
+  surprised: [`.######.\n##....##`, -3],
+  smug: [`........\n..######`, 0],
 };
+// mouths: a wine line with a lit lower lip
 const MOUTHS: Record<Expression, string> = {
-  neutral: `.......\n.mmmmm.`,
-  happy: `m.....m\n.mmmmm.\n..ppp..`,
-  sad: `.mmmmm.\nm.....m`,
-  annoyed: `...mmmm\n.......`,
-  surprised: `..mmm..\n.m000m.\n.m000m.\n..mmm..`,
-  smug: `...mmmm\n......m`,
+  neutral: `.........\n..mmmmm..\n...ppp...`,
+  happy: `m.......m\n.mmmmmmm.\n..ppppp..`,
+  sad: `..mmmmm..\n.m.....m.\n.........`,
+  annoyed: `.....mmmm\n......pp.\n.........`,
+  surprised: `..mmmm...\n.m0000m..\n.m0000m..\n..mmmm...`,
+  smug: `.....mmmm\n.......pm\n.........`,
 };
 
 function face(p: Pixmap, expr: Expression, iris: string, browColor: string, skinSh: string): void {
+  const irisDark =
+    iris === 'water'
+      ? 'river'
+      : iris === 'water-light'
+        ? 'water'
+        : iris === 'moss'
+          ? 'pine'
+          : iris === 'bark'
+            ? 'bark-dark'
+            : iris === 'slate'
+              ? 'slate-dark'
+              : 'ink';
   const eye = px(EYES[expr], EYE_LEGEND);
-  const left = { IRIS: iris, IRIS_SH: 'ink' };
   const painted = {
     w: eye.w,
     h: eye.h,
-    px: eye.px.map((c) => (c === 'IRIS' ? left.IRIS : c === 'IRIS_SH' ? left.IRIS_SH : c)),
+    px: eye.px.map((c) =>
+      c === 'IRIS' ? iris : c === 'IRIS_SH' ? irisDark : c === 'LID' ? skinSh : c,
+    ),
   };
-  blit(p, painted, 20, 31);
+  blit(p, painted, 19, 31);
   const mirrored = { w: eye.w, h: eye.h, px: painted.px.slice() };
   for (let y = 0; y < eye.h; y++)
     for (let x = 0; x < eye.w; x++)
       mirrored.px[y * eye.w + x] = painted.px[y * eye.w + (eye.w - 1 - x)]!;
-  blit(p, mirrored, 37, 31);
-  if (expr === 'neutral' || expr === 'surprised' || expr === 'sad') {
+  blit(p, mirrored, 36, 31);
+  if (expr !== 'happy') {
     set(p, 23, 32, 'cream');
     set(p, 40, 32, 'cream');
   }
   const [browRows, dy] = BROWS[expr];
   const brow = px(browRows, { '#': browColor });
-  blit(p, brow, 20, 27 + dy);
+  blit(p, brow, 19, 26 + dy);
   const browR = { w: brow.w, h: brow.h, px: brow.px.slice() };
   for (let y = 0; y < brow.h; y++)
     for (let x = 0; x < brow.w; x++)
       browR.px[y * brow.w + x] = brow.px[y * brow.w + (brow.w - 1 - x)]!;
-  blit(p, browR, 38, 27 + dy);
-  // nose
+  blit(p, browR, 37, 26 + dy);
+  // nose: a shaded bridge and a lit tip
+  set(p, 33, 35, skinSh);
   set(p, 33, 36, skinSh);
   set(p, 33, 37, skinSh);
-  set(p, 33, 38, skinSh);
-  set(p, 34, 39, skinSh);
+  set(p, 34, 38, skinSh);
+  set(p, 33, 39, skinSh);
   set(p, 32, 39, skinSh);
-  const mouth = px(MOUTHS[expr], { m: 'wine', p: 'peach', '0': 'ink' });
-  blit(p, mouth, 29, expr === 'surprised' ? 41 : 42);
-  if (expr === 'happy' || expr === 'smug') {
-    fillRect(p, 21, 39, 3, 2, 'ember@120');
-    fillRect(p, 40, 39, 3, 2, 'ember@120');
-  }
+  set(p, 31, 38, 'cream@60');
+  const mouth = px(MOUTHS[expr], { m: 'wine', p: 'ember', '0': 'ink' });
+  blit(p, mouth, 28, expr === 'surprised' ? 41 : 42);
+  // blush, stronger when pleased
+  const blush = expr === 'happy' || expr === 'smug' ? 'ember@140' : 'ember@70';
+  fillRect(p, 20, 39, 4, 2, blush);
+  fillRect(p, 40, 39, 4, 2, blush);
 }
 
 interface HairShape {
@@ -176,6 +212,23 @@ function cap(p: Pixmap, c: readonly [string, string, string], hairline: number, 
 function shadeHair(dx: number, dy: number, c: readonly [string, string, string]): string {
   const lit = -dx * 0.5 - dy;
   return lit > 0.75 ? c[2] : lit > -0.2 ? c[1] : c[0];
+}
+
+/** Highlight arcs over the lit crown and a few dark strands on the shaded side, only where hair is. */
+function strands(p: Pixmap): void {
+  const arc = (r: number, a0: number, a1: number, c: string, cy = HEAD_CY - 4) => {
+    for (let a = a0; a <= a1; a += 0.03) {
+      const x = Math.round(CX + Math.cos(a) * r);
+      const y = Math.round(cy + Math.sin(a) * r * 0.9);
+      const here = get(p, x, y);
+      if (here === 'HAIR' || (c === 'HAIR_SH' && here === 'HAIR_HI')) set(p, x, y, c);
+    }
+  };
+  arc(16, Math.PI * 1.15, Math.PI * 1.55, 'HAIR_HI');
+  arc(13, Math.PI * 1.2, Math.PI * 1.5, 'HAIR_HI');
+  arc(19, Math.PI * 1.25, Math.PI * 1.45, 'HAIR_HI');
+  arc(17, Math.PI * 1.75, Math.PI * 1.95, 'HAIR_SH');
+  arc(14, Math.PI * 1.8, Math.PI * 1.98, 'HAIR_SH');
 }
 
 function outlineHair(p: Pixmap, color: string): void {
@@ -300,6 +353,7 @@ export function portrait(look: Look, expr: Expression): Pixmap {
   face(p, expr, look.eyes, hairC[0], skin[0]);
   const front = blank(64, 64);
   shape.front(front, H);
+  strands(front);
   outlineHair(front, 'HAIR_OUT');
   for (let i = 0; i < front.px.length; i++) if (front.px[i] === 'SKIN_HOLE') front.px[i] = null;
   blit(p, front, 0, 0);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, compose } from '../buildings.ts';
-import { DIRS, frame, HAIR_STYLES, type Look } from '../characters.ts';
+import { DIRS, frame, FRAMES_PER_DIR, HAIR_STYLES, type Look } from '../characters.ts';
 import { buildFont } from '../font.ts';
 import { PALETTE, PALETTE_NAMES, RAMPS, SEASON_SWAPS, SKIN, TRIO } from '../palette.ts';
 import { get, toPNG, type Pixmap } from '../pixmap.ts';
@@ -78,9 +78,14 @@ describe('the town (§7.5)', () => {
     expect(spawns.filter((o) => o.type === 'spawn')).toHaveLength(12);
     expect(spawns.some((o) => o.name === 'wander')).toBe(true);
   });
-  it('animates every water tile with a second frame', () => {
+  it('animates every water tile through a three-frame cycle', () => {
     const water = json.layers.find((l) => l.name === 'water')!.data!.filter((g) => g > 0);
-    for (const g of new Set(water)) expect(town.waterSwap[g]).toBeGreaterThan(0);
+    for (const g of new Set(water)) {
+      const b = town.waterCycle[g]!;
+      const c = town.waterCycle[b]!;
+      expect(b).toBeGreaterThan(0);
+      expect(town.waterCycle[c]).toBe(g);
+    }
   });
   it('renders the same sheet twice (deterministic)', () => {
     expect(toPNG(buildTown().tileset.render()).equals(toPNG(town.tileset.render()))).toBe(true);
@@ -92,17 +97,21 @@ describe('the building kit', () => {
     for (const [key, spec] of Object.entries(BUILDINGS)) {
       const b = compose(spec);
       expect(b.above, key).toHaveLength(spec.roofRows);
+      expect(b.above[0], key).toHaveLength(spec.w + 2);
       expect(b.walls, key).toHaveLength(spec.wallRows);
-      expect(b.lights.length, key).toBe(spec.lit === false ? 0 : (spec.windows ?? []).length);
+      expect(b.lights.filter((l) => l.kind === 'window').length, key).toBe(
+        spec.lit === false ? 0 : (spec.windows ?? []).length,
+      );
+      expect(b.smoke, key).toHaveLength((spec.chimneys ?? []).length);
     }
   });
 });
 
 describe('characters (§4.4)', () => {
-  it('draws 16 frames per look inside a 16×32 cell with one pixel of padding', () => {
+  it('draws 20 frames per look inside a 16×32 cell with one pixel of padding', () => {
     for (const hair of HAIR_STYLES) {
       for (const d of DIRS) {
-        for (let n = 0; n < 4; n++) {
+        for (let n = 0; n < FRAMES_PER_DIR; n++) {
           const f = frame({ ...look, hair }, d, n);
           expect([f.w, f.h]).toEqual([16, 32]);
           for (let y = 0; y < 32; y++) {

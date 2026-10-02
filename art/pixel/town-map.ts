@@ -57,7 +57,8 @@ export interface TownMap {
   json: unknown;
   tileset: TilesetBuilder;
   /** Frame-A gid → frame-B gid for every animated water tile. */
-  waterSwap: Record<number, number>;
+  waterCycle: Record<number, number>;
+  smoke: { x: number; y: number }[];
   spawns: { x: number; y: number }[];
   lights: { x: number; y: number; kind: string }[];
 }
@@ -70,10 +71,15 @@ class Town {
   readonly material: Material[] = new Array<Material>(MAP_W * MAP_H).fill('grass');
   /** Cells that trees and props must not take. */
   readonly blocked = new Uint8Array(MAP_W * MAP_H);
+  /** Cobble cells that get moss in the grout (the old courtyard). */
+  readonly mossy = new Uint8Array(MAP_W * MAP_H);
+  /** Tilled cells that were watered today. */
+  readonly wet = new Uint8Array(MAP_W * MAP_H);
   readonly lights: { x: number; y: number; kind: string }[] = [];
   readonly spawns: { x: number; y: number }[] = [];
   readonly doors: { name: string; x: number; y: number }[] = [];
-  readonly waterSwap: Record<number, number> = {};
+  readonly waterCycle: Record<number, number> = {};
+  readonly smoke: { x: number; y: number }[] = [];
   private readonly bigs = new Map<string, ReturnType<TilesetBuilder['big']>>();
 
   constructor(ts: TilesetBuilder) {
@@ -160,29 +166,52 @@ class Town {
     if (block) this.block(x, y, 1, 1);
   }
 
+  /** Place a building with its wall's left edge at tile x and its ridge at tile y. */
   building(key: keyof typeof BUILDINGS, x: number, y: number): ComposedBuilding {
     const b = compose(BUILDINGS[key]!);
     b.above.forEach((row, r) =>
-      row.forEach((t, c) => this.put('above', x + c, y + r, this.ts.tile(t, 'static'))),
-    );
-    b.walls.forEach((row, r) =>
       row.forEach((t, c) =>
-        this.put('buildings', x + c, y + b.spec.roofRows + r, this.ts.tile(t, 'static')),
+        this.put('above', x + b.aboveOffsetX + c, y + r, this.ts.tile(t, 'static')),
       ),
+    );
+    const wallY = y + b.spec.roofRows;
+    b.walls.forEach((row, r) =>
+      row.forEach((t, c) => this.put('buildings', x + c, wallY + r, this.ts.tile(t, 'static'))),
     );
     for (const l of b.lights)
       this.lights.push({
         x: x * TILE + l.x,
-        y: y * TILE + l.y,
-        kind: key === 'trading-firm' ? 'firm' : 'window',
+        y: wallY * TILE + l.y,
+        kind: l.kind === 'lantern' ? 'lantern' : key === 'trading-firm' ? 'firm' : 'window',
       });
-    this.block(x, y, b.w, b.h + 1);
+    for (const sm of b.smoke) this.smoke.push({ x: x * TILE + sm.x, y: wallY * TILE + sm.y });
+    this.block(x - 1, y, b.w + 2, b.h + 1);
     const doorY = y + b.h;
     this.doors.push({ name: b.spec.name, x: x + b.doorX, y: doorY });
-    this.put('objects', x + b.doorX, doorY, this.ts.tile(O.STEPS, 'static', 'steps'));
-    if (b.spec.door?.kind === 'double' || b.spec.door?.kind === 'barn')
-      this.put('objects', x + b.doorX + 1, doorY, this.ts.tile(O.STEPS, 'static', 'steps'));
+    for (let c = 0; c < b.w; c++) {
+      const isDoor = c >= b.doorX && c < b.doorX + b.doorWidth;
+      this.put(
+        'objects',
+        x + c,
+        doorY,
+        this.ts.tile(
+          isDoor ? O.PORCH : O.SHADOW_STRIP,
+          'static',
+          isDoor ? 'porch' : 'shadow-strip',
+        ),
+      );
+    }
     return b;
+  }
+
+  /** A run of hedge along a row, with gaps. */
+  hedgeRow(x: number, y: number, w: number, gaps: number[] = []): void {
+    const cells = new Set<number>();
+    for (let i = x; i < x + w; i++) if (!gaps.includes(i)) cells.add(i);
+    for (const i of cells) {
+      const mask = (cells.has(i + 1) ? T.E : 0) | (cells.has(i - 1) ? T.WEST : 0);
+      this.prop(`hedge-${mask}`, O.hedge(mask), i, y, 'leaf');
+    }
   }
 
   fenceRect(x: number, y: number, w: number, h: number, gaps: [number, number][] = []): void {
@@ -244,9 +273,12 @@ class Town {
         const m = this.material[this.idx(x, y)]!;
         if (m === 'cliff') continue; // placed by hand: CLIFF_TOP / CLIFF_BOTTOM / the stairs
         const v = hash(x, y);
-        let groundPic = T.GRASS[v % 7 === 0 ? 1 : v % 11 === 0 ? 2 : 0]!;
-        if (m === 'cobble') groundPic = T.cobble(v % 3 === 0 ? 1 : 0);
-        else if (m === 'tilled') groundPic = T.TILLED;
+        let groundPic =
+          v % 37 === 0
+            ? T.GRASS_DECALS[(v >>> 8) % T.GRASS_DECALS.length]!
+            : T.GRASS[v % T.GRASS.length]!;
+        if (m === 'cobble') groundPic = T.cobble(v % 3, this.mossy[this.idx(x, y)] === 1);
+        else if (m === 'tilled') groundPic = this.wet[this.idx(x, y)] ? T.TILLED_WET : T.TILLED;
         else if (
           m === 'water' &&
           [
@@ -287,7 +319,10 @@ class Town {
           const mask = maskOf(x, y, ['water', 'planks']);
           const a = this.ts.tile(T.water(mask, 0, v % 2), 'static');
           const b = this.ts.tile(T.water(mask, 1, v % 2), 'static');
-          this.waterSwap[a] = b;
+          const c = this.ts.tile(T.water(mask, 2, v % 2), 'static');
+          this.waterCycle[a] = b;
+          this.waterCycle[b] = c;
+          this.waterCycle[c] = a;
           this.put('water', x, y, a);
         }
       }
@@ -368,6 +403,18 @@ class Town {
       visible: true,
       properties: [{ name: 'kind', type: 'string', value: l.kind }],
     }));
+    const smoke = this.smoke.map((sm) => ({
+      id: oid++,
+      name: 'smoke',
+      type: 'smoke',
+      point: true,
+      x: sm.x,
+      y: sm.y,
+      width: 0,
+      height: 0,
+      rotation: 0,
+      visible: true,
+    }));
     const doors = this.doors.map((d) => ({
       id: oid++,
       name: d.name,
@@ -391,11 +438,11 @@ class Town {
       height: MAP_H,
       tilewidth: TILE,
       tileheight: TILE,
-      nextlayerid: 11,
+      nextlayerid: 12,
       nextobjectid: oid,
       properties: [
         { name: 'source', type: 'string', value: 'art/pixel/town-map.ts (PROMPT.md §7.5)' },
-        { name: 'waterSwap', type: 'string', value: JSON.stringify(this.waterSwap) },
+        { name: 'waterCycle', type: 'string', value: JSON.stringify(this.waterCycle) },
       ],
       tilesets: [
         {
@@ -423,6 +470,7 @@ class Town {
         objectLayer(8, 'spawns', spawns),
         objectLayer(9, 'lights', lights),
         objectLayer(10, 'doors', doors),
+        objectLayer(11, 'smoke', smoke),
       ],
     };
   }
@@ -496,6 +544,11 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   );
   for (const x of [46, 48, 50, 52, 54, 56])
     for (const y of [12, 14]) t.spawns.push({ x: x * TILE + 8, y: y * TILE + 12 });
+  t.hedgeRow(44, 16, 16, [51, 52]);
+  t.prop('flower-bed', O.FLOWER_BED, 43, 12);
+  t.prop('flower-bed', O.FLOWER_BED, 60, 12);
+  t.prop('flower-bed', O.FLOWER_BED, 43, 14);
+  t.prop('flower-bed', O.FLOWER_BED, 60, 14);
   const lot = (x: number, y: number) => {
     t.fenceRect(x, y, 5, 4, [[x + 2, y + 3]]);
     t.mark(x + 1, y + 1, 3, 2, 'dirt');
@@ -507,6 +560,13 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   lot(39, 11);
   lot(61, 11);
   lot(67, 11);
+
+  // lamps along the main road
+  for (const x of [8, 20, 40, 60, 72]) {
+    if (!t.isFree(x, 16)) continue;
+    t.object('lamp', () => O.LAMP_POST, x, 16, { splitAt: 1 });
+    t.lights.push({ x: x * TILE + 8, y: 15 * TILE + 5, kind: 'lamp' });
+  }
 
   // ---- Town Square ----
   t.building('town-hall', 34, 19);
@@ -522,6 +582,10 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   );
   t.object('bench', () => O.BENCH, 38, 28);
   t.object('bench', () => O.BENCH, 49, 28);
+  t.prop('flower-bed', O.FLOWER_BED, 41, 26);
+  t.prop('flower-bed', O.FLOWER_BED, 46, 26);
+  t.prop('flower-bed', O.FLOWER_BED, 41, 28);
+  t.prop('flower-bed', O.FLOWER_BED, 46, 28);
   t.building('general-store', 34, 29);
   t.building('clinic', 46, 29);
   t.mark(33, 34, 24, 2, 'cobble');
@@ -534,6 +598,8 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   // ---- the Old Exchange ----
   t.mark(62, 22, 8, 14, 'cobble');
   t.block(62, 22, 8, 14);
+  for (let j = 22; j < 36; j++)
+    for (let i = 62; i < 70; i++) if (hash(i, j) % 3 === 0) t.mossy[t.idx(i, j)] = 1;
   t.building('hall-growers', 57, 19);
   t.building('hall-anglers', 70, 19);
   t.building('hall-prospectors', 57, 25);
@@ -560,17 +626,26 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   t.object('mailbox', () => O.MAILBOX, 2, 25, { splitAt: 0 });
   t.object('ledger-bin', () => O.LEDGER_BIN, 7, 24);
   t.object('well', () => O.WELL, 1, 29);
+  // the farm plot: four beds split by a path, two beds watered, sprouts in most tiles
   t.mark(9, 28, 12, 12, 'tilled');
+  t.mark(14, 28, 2, 12, 'dirt');
+  t.mark(9, 33, 12, 2, 'dirt');
   t.block(9, 28, 12, 12);
   for (let j = 28; j < 40; j++)
-    for (let i = 9; i < 21; i++)
-      if (hash(i, j) % 4 === 0) t.put('objects', i, j, ts.tile(T.SPROUT, 'leaf', 'sprout'));
+    for (let i = 9; i < 21; i++) {
+      if (t.material[t.idx(i, j)] !== 'tilled') continue;
+      if ((i >= 15 && j < 33) || (i < 14 && j >= 35)) t.wet[t.idx(i, j)] = 1;
+      if (hash(i, j) % 3 !== 0) t.put('objects', i, j, ts.tile(T.SPROUT, 'leaf', 'sprout'));
+    }
   t.fenceRect(8, 27, 14, 14, [
     [14, 27],
     [15, 27],
   ]);
   t.prop('flowers-c', O.FLOWERS[2]!, 1, 22, 'ground');
   t.prop('flowers-a', O.FLOWERS[0]!, 9, 22, 'ground');
+  t.object('scarecrow', () => O.SCARECROW, 14, 33, { splitAt: 0 });
+  t.prop('flower-bed', O.FLOWER_BED, 2, 24);
+  t.prop('flower-bed', O.FLOWER_BED, 8, 25);
 
   // ---- Okonkwo Ranch ----
   t.fenceRect(2, 43, 27, 19, [
@@ -581,6 +656,7 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   t.building('coop', 15, 46);
   t.building('wrens-cottage', 22, 45);
   t.object('trough', () => O.TROUGH, 12, 53);
+  t.object('wagon', () => O.WAGON, 13, 49);
   t.prop('hay', O.HAY, 15, 54);
   t.prop('hay', O.HAY, 16, 54);
   t.prop('hay', O.HAY, 15, 55);
@@ -646,6 +722,10 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   }
   t.prop('rock-a', O.ROCKS[0]!, 71, 62);
   t.prop('rock-b', O.ROCKS[1]!, 73, 62);
+  t.prop('barrel', O.BARREL, 66, 49);
+  t.prop('crate', O.CRATE, 67, 49);
+  t.prop('crate', O.CRATE, 66, 52);
+  t.object('bench', () => O.BENCH, 62, 52);
 
   // ---- the broken bridge and the Far Bank ----
   t.put('objects', 75, 17, ts.tile(T.PLANKS, 'static', 'planks'));
@@ -702,7 +782,8 @@ export function buildTown(ts = new TilesetBuilder()): TownMap {
   return {
     json: t.toTiled(),
     tileset: ts,
-    waterSwap: t.waterSwap,
+    waterCycle: t.waterCycle,
+    smoke: t.smoke,
     spawns: t.spawns,
     lights: t.lights,
   };

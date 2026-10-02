@@ -268,13 +268,25 @@ const LEFT_3 = body(`
 export type Dir = 'down' | 'up' | 'left' | 'right';
 export const DIRS: Dir[] = ['down', 'up', 'left', 'right'];
 
-/** The four walk frames per direction: stand, step, stand, other step. */
+/** The standing frame with head and torso settled one pixel lower: the second idle-breathe frame. */
+function breathe(stand: Pixmap): Pixmap {
+  const out = blank(16, 32);
+  for (let y = 1; y <= 25; y++)
+    for (let x = 0; x < 16; x++) out.px[y * 16 + x] = stand.px[(y - 1) * 16 + x]!;
+  for (let y = 25; y < 32; y++)
+    for (let x = 0; x < 16; x++)
+      if (stand.px[y * 16 + x]) out.px[y * 16 + x] = stand.px[y * 16 + x]!;
+  return out;
+}
+
+/** Five frames per direction: walk 0–3 (stand, step, stand, other step) and 4 = breathe. */
 export const BODY_FRAMES: Record<Dir, Pixmap[]> = {
-  down: [DOWN_0, DOWN_1, DOWN_0, flipH(DOWN_1)],
-  up: [UP_0, UP_1, UP_0, flipH(UP_1)],
-  left: [LEFT_0, LEFT_1, LEFT_0, LEFT_3],
-  right: [flipH(LEFT_0), flipH(LEFT_1), flipH(LEFT_0), flipH(LEFT_3)],
+  down: [DOWN_0, DOWN_1, DOWN_0, flipH(DOWN_1), breathe(DOWN_0)],
+  up: [UP_0, UP_1, UP_0, flipH(UP_1), breathe(UP_0)],
+  left: [LEFT_0, LEFT_1, LEFT_0, LEFT_3, breathe(LEFT_0)],
+  right: [flipH(LEFT_0), flipH(LEFT_1), flipH(LEFT_0), flipH(LEFT_3), breathe(flipH(LEFT_0))],
 };
+export const FRAMES_PER_DIR = 5;
 
 // ---- hair -----------------------------------------------------------------------------------
 // Hair overlays cover rows 0–15 of the frame. h main · H shadow · L highlight · o outline.
@@ -1004,11 +1016,11 @@ function paintHair(h: Pixmap, look: Look): Pixmap {
 
 /** One frame: body, hair and accessory for a direction and walk frame, with the step bob. */
 export function frame(look: Look, dir: Dir, n: number): Pixmap {
-  const bodyPic = BODY_FRAMES[dir][n % 4]!;
+  const bodyPic = BODY_FRAMES[dir][n % FRAMES_PER_DIR]!;
   const set = HAIR[look.hair];
   const hairView =
     dir === 'down' ? set.down : dir === 'up' ? set.up : dir === 'left' ? set.left : flipH(set.left);
-  const bob = n % 2 === 1 ? -1 : 0;
+  const bob = n === 4 ? 1 : n % 2 === 1 ? -1 : 0;
   const out = blank(16, 32);
   blit(out, paint(bodyPic, look), 0, 0);
   blit(out, paintHair(hairView, look), 0, bob);

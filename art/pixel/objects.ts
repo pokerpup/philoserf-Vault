@@ -29,12 +29,24 @@ interface Blob {
   r: number;
 }
 
+function hash2(x: number, y: number): number {
+  let h = (x * 374761393 + y * 668265263) ^ 0x9e3779b9;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
 /**
  * A leaf canopy from overlapping clumps. Each pixel takes the uppermost clump that covers it,
- * shaded by its position on that clump (lit top-left), with a darker line where a lower clump
- * disappears under it, then a one-pixel inside outline.
+ * shaded by its position on that clump (lit top-left) with leaf speckle in the lit shades, a
+ * darker line where a lower clump disappears under it, and a one-pixel inside outline.
  */
-export function canopy(w: number, h: number, blobs: Blob[], ramp: Ramp = RAMPS.leaf): Pixmap {
+export function canopy(
+  w: number,
+  h: number,
+  blobs: Blob[],
+  ramp: Ramp = RAMPS.leaf,
+  speckle = true,
+): Pixmap {
   const p = blank(w, h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -47,11 +59,17 @@ export function canopy(w: number, h: number, blobs: Blob[], ramp: Ramp = RAMPS.l
       const ly = (y + 0.5 - top.cy) / top.r;
       const lit = -lx * 0.55 - ly;
       let shade = lit > 0.5 ? 'R5' : lit > 0.05 ? 'R4' : lit > -0.5 ? 'R3' : 'R2';
-      // clump edge: this pixel sits on another clump's rim, in that clump's lower-right half
       for (const b of inside) {
         if (b === top) continue;
         const d = Math.hypot(x + 0.5 - b.cx, y + 0.5 - b.cy);
         if (d > b.r - 1.3 && b.cy > top.cy - 0.5 && lx + ly > -0.3) shade = 'R2';
+      }
+      if (speckle) {
+        const hv = hash2(x, y) % 23;
+        if (shade === 'R4' && hv === 0) shade = 'R5';
+        else if (shade === 'R3' && hv < 2) shade = 'R4';
+        else if (shade === 'R2' && hv === 5) shade = 'R3';
+        else if (shade === 'R4' && hv === 7) shade = 'R3';
       }
       p.px[y * w + x] = shade;
     }
@@ -59,40 +77,44 @@ export function canopy(w: number, h: number, blobs: Blob[], ramp: Ramp = RAMPS.l
   return applyRamp(outlineInside(p, 'R1'), ramp);
 }
 
-const OAK_TRUNK = px(
-  `
-  ....ACBBA...
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ...ACCBBBA..
-  ..ACCCBBBBA.
-  ..ACCCBBBBA.
-  .ACCCCBBBBBA
-  ACCCCBBBBBBA
-  AAAAAAAAAAAA`,
-  { A: 'bark-dark', B: 'bark', C: 'timber' },
-);
+/** A tree trunk with bark lines and a flared root, `w` wide and `h` tall, lit from the left. */
+function trunk(w: number, h: number): Pixmap {
+  const p = blank(w, h);
+  const cx = (w - 1) / 2;
+  for (let y = 0; y < h; y++) {
+    const t = y / (h - 1);
+    const half = w * 0.28 + (t > 0.72 ? ((t - 0.72) / 0.28) * (w * 0.22) : 0);
+    for (let x = 0; x < w; x++) {
+      const dx = x + 0.5 - cx;
+      if (Math.abs(dx) > half) continue;
+      let c = dx < -half * 0.35 ? 'timber' : dx > half * 0.45 ? 'bark-dark' : 'bark';
+      if (Math.abs(dx) > half - 1) c = 'bark-dark';
+      if (dx > -half * 0.35 && dx < half * 0.45 && (y + Math.floor(dx)) % 5 === 0) c = 'bark-dark';
+      if (y === h - 1) c = 'bark-dark';
+      set(p, x, y, c);
+    }
+  }
+  return p;
+}
 
-/** A broadleaf tree, 48×64: canopy in the `above` layer, trunk and shadow below. */
+/** A broadleaf tree, 48×80: a tall layered canopy in the `above` layer, trunk and shadow below. */
 export function oak(seed = 0): Pixmap {
-  const p = blank(48, 64);
-  fillEllipse(p, 24, 61, 12, 3, SHADOW);
-  blit(p, OAK_TRUNK, 18, 46);
+  const p = blank(48, 80);
+  fillEllipse(p, 24, 77, 17, 3.5, SHADOW);
+  blit(p, trunk(14, 30), 17, 49);
   const j = (seed % 3) - 1;
-  const leaves = canopy(48, 48, [
-    { cx: 24 + j, cy: 17, r: 15 },
-    { cx: 11, cy: 24, r: 11 },
-    { cx: 37, cy: 24 - j, r: 11 },
-    { cx: 24, cy: 31, r: 13 },
-    { cx: 15 + j, cy: 12, r: 9 },
-    { cx: 33, cy: 11, r: 9 },
+  const leaves = canopy(48, 60, [
+    { cx: 24 + j, cy: 24, r: 17 },
+    { cx: 11, cy: 31, r: 11 },
+    { cx: 37, cy: 31 - j, r: 11 },
+    { cx: 24, cy: 41, r: 14 },
+    { cx: 13 + j, cy: 17, r: 10 },
+    { cx: 35, cy: 16, r: 10 },
+    { cx: 24, cy: 10, r: 9 },
+    { cx: 7, cy: 42, r: 7 },
+    { cx: 41, cy: 42 + j, r: 7 },
+    { cx: 18, cy: 50, r: 7 },
+    { cx: 31, cy: 50, r: 7 },
   ]);
   return blit(p, leaves, 0, 0);
 }
@@ -100,22 +122,15 @@ export function oak(seed = 0): Pixmap {
 /** An orchard tree, 32×48, with fruit in the lit leaves. */
 export function fruitTree(fruit: string, seed = 0): Pixmap {
   const p = blank(32, 48);
-  fillEllipse(p, 16, 45, 8, 2, SHADOW);
-  blit(
-    p,
-    px(`.ACBA.\n.ACBA.\n.ACBA.\n.ACBA.\nACCBBA\nAAAAAA`, {
-      A: 'bark-dark',
-      B: 'bark',
-      C: 'timber',
-    }),
-    13,
-    38,
-  );
+  fillEllipse(p, 16, 45, 9, 2.5, SHADOW);
+  blit(p, trunk(8, 14), 12, 33);
   const leaves = canopy(32, 36, [
     { cx: 16, cy: 14, r: 12 },
     { cx: 8, cy: 20, r: 8 },
     { cx: 24, cy: 20, r: 8 },
-    { cx: 16, cy: 24, r: 9 },
+    { cx: 16, cy: 25, r: 9 },
+    { cx: 11, cy: 10, r: 6 },
+    { cx: 22, cy: 9, r: 6 },
   ]);
   const spots = [
     [10, 12],
@@ -124,44 +139,46 @@ export function fruitTree(fruit: string, seed = 0): Pixmap {
     [24, 24],
     [7, 24],
     [19, 18],
+    [12, 28],
+    [25, 16],
   ];
   spots.forEach(([x, y], i) => {
     if ((i + seed) % 5 === 4) return;
-    if (get(leaves, x!, y!)) set(leaves, x!, y!, fruit);
+    if (get(leaves, x!, y!)) {
+      set(leaves, x!, y!, fruit);
+      set(leaves, x! + 1, y!, fruit);
+      set(leaves, x!, y! + 1, fruit);
+      set(leaves, x! + 1, y! + 1, fruit === 'lantern' ? 'gold' : 'brick-dark');
+    }
   });
   return blit(p, leaves, 0, 0);
 }
 
-/** A conifer, 32×64: three tiers lit from the left. */
+/** A conifer, 32×80: four jagged tiers lit from the left. */
 export function pine(): Pixmap {
-  const p = blank(32, 64);
-  fillEllipse(p, 16, 61, 8, 2, SHADOW);
-  blit(
-    p,
-    px(`.ACBA.\n.ACBA.\n.ACBA.\n.ACBA.\n.ACBA.\nACCBBA\nAAAAAA`, {
-      A: 'bark-dark',
-      B: 'bark',
-      C: 'timber',
-    }),
-    13,
-    51,
-  );
+  const p = blank(32, 80);
+  fillEllipse(p, 16, 77, 9, 2.5, SHADOW);
+  blit(p, trunk(8, 16), 12, 63);
   const tiers: [number, number, number][] = [
-    [2, 22, 14],
-    [14, 36, 20],
-    [28, 52, 26],
+    [2, 20, 12],
+    [14, 36, 18],
+    [28, 52, 24],
+    [44, 68, 30],
   ];
-  const leaves = blank(32, 56);
+  const leaves = blank(32, 70);
   for (const [y0, y1, w] of tiers) {
     for (let y = y0; y < y1; y++) {
-      const half = ((w / 2) * (y - y0 + 2)) / (y1 - y0);
+      const jag = y % 3 === 2 ? 1 : 0;
+      const half = ((w / 2) * (y - y0 + 2)) / (y1 - y0) + jag;
       for (let x = 0; x < 32; x++) {
         const dx = x + 0.5 - 16;
         if (Math.abs(dx) > half) continue;
         const t = dx / Math.max(half, 1);
-        let shade = t < -0.25 ? 'R4' : t > 0.45 ? 'R2' : 'R3';
+        let shade = t < -0.3 ? 'R4' : t > 0.4 ? 'R2' : 'R3';
         if (y >= y1 - 2) shade = 'R2';
-        if (y < y0 + 2 && t < 0.2) shade = 'R5';
+        if (y < y0 + 3 && t < 0.1) shade = 'R5';
+        if (shade === 'R3' && hash2(x, y) % 9 === 0) shade = 'R4';
+        if (shade === 'R4' && hash2(x, y) % 11 === 0) shade = 'R5';
         set(leaves, x, y, shade);
       }
     }
@@ -178,6 +195,25 @@ export function bush(): Pixmap {
     { cx: 8, cy: 6, r: 5 },
   ]);
   return blit(p, leaves, 0, 1);
+}
+
+/** A trimmed hedge by connection mask (E=2, W=8): rounded ends where it stops, seamless where it runs on. */
+export function hedge(mask: number): Pixmap {
+  const blobs: Blob[] = [
+    { cx: 20, cy: 9, r: 6 },
+    { cx: 24, cy: 8, r: 6 },
+    { cx: 28, cy: 9, r: 6 },
+  ];
+  if (mask & 8)
+    blobs.push({ cx: 14, cy: 9, r: 6 }, { cx: 10, cy: 8, r: 6 }, { cx: 6, cy: 9, r: 6 });
+  if (mask & 2)
+    blobs.push({ cx: 34, cy: 9, r: 6 }, { cx: 38, cy: 8, r: 6 }, { cx: 42, cy: 9, r: 6 });
+  const wide = canopy(48, 16, blobs);
+  const out = blank(16, 16);
+  for (let y = 0; y < 16; y++)
+    for (let x = 0; x < 16; x++) out.px[y * 16 + x] = wide.px[y * 48 + x + 16]!;
+  for (let x = 0; x < 16; x++) if (get(out, x, 14) && !get(out, x, 15)) set(out, x, 15, SHADOW);
+  return out;
 }
 
 const F = {
@@ -1140,6 +1176,183 @@ export const STEPS: Pixmap = px(
   WD,
 );
 
+/** A farm cart, 32×32, parked by the barn. */
+export const WAGON: Pixmap = px(
+  `
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  .......AAAAAAAAAAAAAAAAAAAA.....
+  ......AEEEEEEEEEEEEEEEEEEEEA....
+  ......AEDDDDDDDDDDDDDDDDDDDA....
+  ......ADDDDDDDDDDDDDDDDDDDDA....
+  ..AAAAADCCCCCCCCCCCCCCCCCCDA....
+  .AEDDDDDDDDDDDDDDDDDDDDDDDDA....
+  .ADDDDDDDDDDDDDDDDDDDDDDDDDA....
+  .ACCCCCCCCCCCCCCCCCCCCCCCCCA....
+  ..AAAAAAAAAAAAAAAAAAAAAAAAAA....
+  .........111......111...........
+  ........1222.....1222...........
+  .......12221....12221...........
+  .......12221....12221...........
+  .......12221....12221...........
+  ........1221.....1221...........
+  .........11.......11............
+  ........zzzz.....zzzz...........
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................`,
+  WD,
+);
+
+/** A scarecrow in a plum coat and a straw hat, 16×32. */
+export const SCARECROW: Pixmap = px(
+  `
+  ................
+  ......ssss......
+  .....suuuus.....
+  ....suuuuuus....
+  ..ssssssssssss..
+  .....FFFFFF.....
+  ....FF0FF0FF....
+  ....FFFFFFFF....
+  ....FFFF0FFF....
+  .....FFFFFF.....
+  ......EDDA......
+  ..AAAAMMMMAAAA..
+  .AEEEMNNNNMEEEA.
+  .AFFAMNNNNMAFFA.
+  ....MNNNNNNM....
+  ....MNNNNNNM....
+  ....MNNNNNNM....
+  ....MNMNNMNM....
+  .....MMMMMM.....
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  ......EDDA......
+  .....AAAAAA.....
+  ......zzzz......
+  ................`,
+  { ...WD, M: 'plum-dark', N: 'plum', u: 'ochre', s: 'ochre-dark' },
+);
+
+/** A planted bed: a stone edge, dark soil, three colours of bloom. */
+export const FLOWER_BED: Pixmap = px(
+  `
+  ................
+  .44444444444444.
+  .4BBBBBBBBBBBB4.
+  .4BvBBOBBBrBBB4.
+  .4BdBBOBBBdBBB4.
+  .4BBBBdBBBBBBB4.
+  .4BBrBBBBvBBOB4.
+  .4BBdBBBBdBBdB4.
+  .4BBBBBOBBBBBB4.
+  .4BvBBBdBBrBBB4.
+  .4BdBBBBBBdBBB4.
+  .4BBBBrBBBBBvB4.
+  .4BBBBdBBBBBdB4.
+  .3BBBBBBBBBBBB3.
+  .33333333333333.
+  ................`,
+  { ...WD, v: 'lantern', O: 'lavender', d: 'grass', '4': 'stone-light', '3': 'stone' },
+);
+
+/** Chimney smoke, three 16×16 frames rising and thinning. */
+export function smokeFrames(): Pixmap[] {
+  const frames: Pixmap[] = [];
+  for (let f = 0; f < 3; f++) {
+    const p = blank(16, 16);
+    fillCircle(p, 8 - f, 13 - f * 3, 2.5 + f * 0.6, 'stone-light@150');
+    fillCircle(p, 10 - f, 9 - f * 3, 2 + f * 0.5, 'bone@120');
+    if (f > 0) fillCircle(p, 6 + f, 5 - f, 1.8, 'bone@90');
+    frames.push(p);
+  }
+  return frames;
+}
+
+/** A wall lantern beside a door: iron bracket, warm glass. */
+export const WALL_LANTERN: Pixmap = px(
+  `
+  ................
+  ................
+  ......11........
+  ......1.........
+  .....111........
+  ....1gvvg1......
+  ....gvxvvg......
+  ....gvvvvg......
+  ....1gvvg1......
+  .....1gg1.......
+  ......11........
+  ................
+  ................
+  ................
+  ................
+  ................`,
+  WD,
+);
+
+/** The plank porch in front of a door, with its step edge and shadow on the ground. */
+export const PORCH: Pixmap = px(
+  `
+  EDDDDDDDDDDDDDDD
+  DDDDDDDDDDDDDDDD
+  CCCCCCCCCCCCCCCC
+  EDDDDDDDDDDDDDDD
+  DDDDDD0DDDDDDDDD
+  CCCCCCCCCCCCCCCC
+  EDDDDDDDDDDDDDDD
+  DDDDDDDDDDDDDDDD
+  BBBBBBBBBBBBBBBB
+  AAAAAAAAAAAAAAAA
+  zzzzzzzzzzzzzzzz
+  yyyyyyyyyyyyyyyy
+  ................
+  ................
+  ................
+  ................`,
+  { ...WD, y: 'ink@35' },
+);
+
+/** The soft shadow a wall casts on the ground row below it. */
+export const SHADOW_STRIP: Pixmap = px(
+  `
+  zzzzzzzzzzzzzzzz
+  yyyyyyyyyyyyyyyy
+  xxxxxxxxxxxxxxxx
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................
+  ................`,
+  { z: 'ink@60', y: 'ink@40', x: 'ink@20' },
+);
+
 export function previewObjects(): Pixmap[] {
   return [
     oak(0),
@@ -1147,6 +1360,16 @@ export function previewObjects(): Pixmap[] {
     fruitTree('ember'),
     fruitTree('lantern', 1),
     bush(),
+    hedge(0),
+    hedge(2 | 8),
+    hedge(2),
+    WAGON,
+    SCARECROW,
+    FLOWER_BED,
+    ...smokeFrames(),
+    WALL_LANTERN,
+    PORCH,
+    SHADOW_STRIP,
     ...FLOWERS,
     ...TUFTS,
     ...ROCKS,
